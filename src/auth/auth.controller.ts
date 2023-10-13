@@ -1,16 +1,34 @@
-import { Controller, Post, Res } from '@nestjs/common';
+import { Controller, Get, Query, Res } from '@nestjs/common';
+import { Response } from 'express';
+import { AuthService } from './auth.service';
 import { UsersService } from 'src/users/users.service';
 
-@Controller()
+@Controller('auth')
 export class AuthController {
-    // @Post('sign-in')
-    // async signIn(@Res res: Response) {
-    //     // 세션에서 토큰 가져와서 로그인 처리한 후 캐릭터 등록 여부에 따라 분기
-    //     if (usersService.findByEmail(email).getNickname()) {
-    //         return res.redirect('/home');
-    //     }
-    //     else {
-    //         return res.redirect('/users/resister');
-    //     }
-    // }
+
+    constructor(
+        private authService: AuthService,
+        private usersService: UsersService
+    ){}
+
+    @Get('sign-in')
+    signIn(@Res() res: Response) {
+        res.redirect(this.authService.getRedirectUrl());
+    }
+
+    @Get('/callback')
+    async userRedirect(@Res() res: Response, @Query('code') code: string): Promise<void> {
+        const email = await this.authService.getEmail(code);
+        this.authService.handleUserRegistration(res, email);
+        
+        // const sessionId = 'hash';
+        // res.cookie('sessionId', sessionId, {
+        //     httpOnly: true,
+        //     secure: true,
+        //     sameSite: 'strict',
+        //     maxAge: 7200000
+        // });
+    }
 }
+
+
