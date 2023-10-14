@@ -1,9 +1,7 @@
-import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm"
-import { MatchHistory } from "./match-history.entity";
-import { UserRelation } from "../../user-relation/user-relation.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm"
 
 @Entity()
-export class User extends BaseEntity {
+export class User {
 
     @PrimaryGeneratedColumn()
     id: number;
@@ -12,7 +10,6 @@ export class User extends BaseEntity {
     email: string;
 
     @Column({ unique: true, nullable: true })
-    // @Column({unique: true, nullable: true})
     nickname: string;
 
     @Column({ default: 0})

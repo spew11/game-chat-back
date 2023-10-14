@@ -3,28 +3,10 @@ import { UsersService } from './users.service';
 import { ShowUserOverviewDto } from './dtos/show-user-overview.dto';
 import { ShowUserDetailsDto } from './dtos/show-user-details.dto';
 import { UpdateUserDetailsDto } from './dtos/update-user-details.dto';
-import { ShowMatchHistoryDto } from './dtos/show-match-history.dto';
 
 @Controller('users')
 export class UsersController {
     constructor(private usersService: UsersService){ }
-
-    @Get('match-history/:id')
-    async getMatchHistories(@Param('id') id: number) : Promise<ShowMatchHistoryDto[]> {
-        const matchHistories = await this.usersService.findMatchHistoriesByUserId(id);
-        const matchHistoryDtos: ShowMatchHistoryDto[] = matchHistories.map(matchHistory => {
-            const matchHistoryDto = new ShowMatchHistoryDto();
-            matchHistoryDto.gameType = matchHistory.gameType;
-            matchHistoryDto.outcome = matchHistoryDto.myScore > matchHistoryDto.opponentScore ? 'win' : 'lose';
-            matchHistoryDto.lpChange = matchHistory.lpChange;
-            matchHistoryDto.opponentNickname = matchHistory.opponentUser.nickname;
-            matchHistoryDto.myScore = matchHistory.myScore;
-            matchHistoryDto.opponentScore = matchHistory.opponentScore;
-            matchHistoryDto.playedAt = matchHistory.playedAt;
-            return matchHistoryDto;
-        });
-        return matchHistoryDtos;
-    }
 
     @Get(':id')
     async getUserDetails(@Param('id') id: number) : Promise<ShowUserDetailsDto> {
@@ -57,8 +39,6 @@ export class UsersController {
         await this.usersService.updateUser(userId, userDto);
     }
     
-
-
     // @Post('/register')
     // userAdd(@Req() request: Request, @Body() createUserDto: CreateUserDto ) : Promise<void> {
         // const cookies = request.cookies;
