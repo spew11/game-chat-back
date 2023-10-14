@@ -8,8 +8,8 @@ import { UpdateUserDetailsDto } from './dtos/update-user-details.dto';
 export class UsersController {
     constructor(private usersService: UsersService){ }
 
-    @Get(':id')
-    async getUserDetails(@Param('id') id: number) : Promise<ShowUserDetailsDto> {
+    @Get(':user_id')
+    async getUserDetails(@Param('user_id') id: number) : Promise<ShowUserDetailsDto> {
         const user = await this.usersService.findById(id);
         const userDto = new ShowUserDetailsDto();
         userDto.avatar = user.avatar;

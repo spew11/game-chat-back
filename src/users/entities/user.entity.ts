@@ -20,14 +20,13 @@ export class User {
 
     @Column({ type: 'varchar', length:256, nullable: true})
     bio: string;
-
+    
     @Column({ default: true})
     is2fa: boolean;
+    
+    @Column({ default: 0 })
+    total_wins: number;
 
-    // // LazyLoading으로 User에서 나의 MatchHistory를 필요할 때만 로드할 수 있게 함 
-    // @OneToMany(() => MatchHistory, matchHistory => matchHistory.participantUserId)
-    // participatedMatches: MatchHistory[]
-
-    // @OneToMany(() => UserRelation, userRelation => userRelation.userId)
-    // userRelationships: UserRelation[]
+    @Column({ default: 0 })
+    total_losses: number;
 }

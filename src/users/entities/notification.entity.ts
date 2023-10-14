@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
 
 @Entity()
@@ -8,7 +8,7 @@ export class Notification {
     id: number;
 
     @ManyToOne(() => User)
-    @JoinColumn({ name: 'userId' })
+    @JoinColumn()
     user: User;
 
     @Column()

@@ -1,25 +1,19 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "../users/entities/user.entity";
 import { UserRelationStatusEnum } from "src/enums/user-relation-status.enum";
 
 @Entity()
-export class UserRelation extends BaseEntity {
-    // userRelation.userId 으로 접근하기 위해서 별도 필드 명시
-    // @PrimaryColumn()
-    // myId: number;
-
-    // @PrimaryColumn()
-    // relatedUserId: number;
+export class UserRelation {
     @PrimaryGeneratedColumn()
     id: number;
 
     @ManyToOne(() => User)
-    @JoinColumn()
+    @JoinColumn({ name: 'userId ' })
     user: User;
 
     @ManyToOne(() => User)
-    @JoinColumn()
-    relatedUser: User;
+    @JoinColumn({ name: 'otherUserId' })
+    otherUser: User;
 
     @Column({
         type: 'enum',
