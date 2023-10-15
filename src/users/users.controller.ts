@@ -8,18 +8,6 @@ import { UpdateUserDetailsDto } from './dtos/update-user-details.dto';
 export class UsersController {
     constructor(private usersService: UsersService){ }
 
-    @Get(':user_id')
-    async getUserDetails(@Param('user_id') id: number) : Promise<ShowUserDetailsDto> {
-        const user = await this.usersService.findById(id);
-        const userDto = new ShowUserDetailsDto();
-        userDto.avatar = user.avatar;
-        userDto.bio = user.bio;
-        userDto.email = user.email;
-        userDto.ladderPoint = user.ladderPoint;
-        userDto.nickname = user.nickname;
-        return userDto;
-    }
-
     @Get()
     async getUsersOverview(): Promise<ShowUserOverviewDto[]> {
         const users = await this.usersService.findAllUsers();
@@ -32,6 +20,19 @@ export class UsersController {
         });
         return userDtos;
     }
+
+    @Get('info/:user_id')
+    async getUserDetails(@Param('user_id') id: number) : Promise<ShowUserDetailsDto> {
+        const user = await this.usersService.findById(id);
+        const userDto = new ShowUserDetailsDto();
+        userDto.avatar = user.avatar;
+        userDto.bio = user.bio;
+        userDto.email = user.email;
+        userDto.ladderPoint = user.ladderPoint;
+        userDto.nickname = user.nickname;
+        return userDto;
+    }
+
 
     @Put('me')
     async updateUser(@Body() userDto: UpdateUserDetailsDto): Promise<void> {

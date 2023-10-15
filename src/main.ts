@@ -8,7 +8,7 @@ async function bootstrap() {
   // DB튜플 추가
   const testService = app.get(TestService);
   await testService.addUser();
- // await testService.addUserRelation();
+  await testService.addUserRelation();
 
   await app.listen(4000);
 }

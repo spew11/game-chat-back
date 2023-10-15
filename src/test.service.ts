@@ -5,6 +5,8 @@ import { UsersService } from "./users/users.service"
 import { User } from './users/entities/user.entity';
 import { UserRelationStatusEnum } from './enums/user-relation-status.enum';
 import { UserRelation } from './user-relation/user-relation.entity';
+import { UserRelationService } from './user-relation/user-relation.service';
+import { CreateUserRelationDto } from './user-relation/dtos/create-user-relation.dto';
 
 @Injectable()
 export class TestService {
@@ -13,7 +15,8 @@ export class TestService {
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
         @InjectRepository(UserRelation)
-        private readonly userRelationRepository: Repository<UserRelation>
+        private readonly userRelationRepository: Repository<UserRelation>,
+        private readonly userRelationService: UserRelationService
     ) {}
 
     async addUser() : Promise<void> {
@@ -36,20 +39,60 @@ export class TestService {
     }
 
     async addUserRelation() : Promise<void> {
-        const userRelations = [
-            { userId: 1, otherUserId: 2, status: UserRelationStatusEnum.BLOCKED},
-            { userId: 1, otherUserId: 3, status: UserRelationStatusEnum.BLOCKED},
-            { userId: 1, otherUserId: 5, status: UserRelationStatusEnum.BLOCKED},
-    
-            { userId: 1, otherUserId: 4, status: UserRelationStatusEnum.FRIEND},
-            { userId: 4, otherUserId: 1, status: UserRelationStatusEnum.FRIEND},
-            { userId: 1, otherUserId: 7, status: UserRelationStatusEnum.FRIEND},
-            { userId: 7, otherUserId: 1, status: UserRelationStatusEnum.FRIEND},
-        ];
-
-        for (const userRelationData of userRelations) {
-            console.log(await this.userRelationRepository.save(userRelationData));
-            
+        const userRelations: CreateUserRelationDto[] = [];
+        
+        userRelations.push({
+            user: await this.usersService.findById(1),
+            otherUser: await this.usersService.findById(2),
+            status: UserRelationStatusEnum.FRIEND
+        })
+        userRelations.push({
+            user: await this.usersService.findById(2),
+            otherUser: await this.usersService.findById(1),
+            status: UserRelationStatusEnum.FRIEND
+        })
+        userRelations.push({
+            user: await this.usersService.findById(1),
+            otherUser: await this.usersService.findById(3),
+            status: UserRelationStatusEnum.FRIEND
+        })
+        userRelations.push({
+            user: await this.usersService.findById(3),
+            otherUser: await this.usersService.findById(1),
+            status: UserRelationStatusEnum.FRIEND
+        })
+        userRelations.push({
+            user: await this.usersService.findById(1),
+            otherUser: await this.usersService.findById(4),
+            status: UserRelationStatusEnum.FRIEND
+        })
+        userRelations.push({
+            user: await this.usersService.findById(4),
+            otherUser: await this.usersService.findById(1),
+            status: UserRelationStatusEnum.FRIEND
+        })
+        userRelations.push({
+            user: await this.usersService.findById(1),
+            otherUser: await this.usersService.findById(5),
+            status: UserRelationStatusEnum.BLOCKED
+        })
+        userRelations.push({
+            user: await this.usersService.findById(1),
+            otherUser: await this.usersService.findById(6),
+            status: UserRelationStatusEnum.BLOCKED
+        })
+        userRelations.push({
+            user: await this.usersService.findById(1),
+            otherUser: await this.usersService.findById(7),
+            status: UserRelationStatusEnum.FRIEND_REQUEST
+        })
+        userRelations.push({
+            user: await this.usersService.findById(7),
+            otherUser: await this.usersService.findById(1),
+            status: UserRelationStatusEnum.PENDING_APPROVAL
+        })
+        for (const userRelation of userRelations) {
+            await this.userRelationRepository.save(userRelation);
         }
     }
 }

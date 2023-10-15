@@ -41,7 +41,7 @@ export class UserRelationService {
     // user-otherUser 친구 관계인지 체크
     async isFriendRelation(userId: number, otherUserId: number): Promise<boolean> {
         const userRelation = await this.findUserRelation(userId, otherUserId);
-        if (userRelation != null && userRelation.status === UserRelationStatusEnum.FRIEND) {
+        if (userRelation && userRelation.status === UserRelationStatusEnum.FRIEND) {
             return true;
         }
         return false;
@@ -50,7 +50,7 @@ export class UserRelationService {
     // user가 otherUser에게 차단당했는지 아닌지 확인
     async isBlockedRelation(userId: number, otherUserId: number): Promise<boolean> {
         const userRelation = await this.findUserRelation(otherUserId, userId);
-        if (userRelation != null && userRelation.status === UserRelationStatusEnum.BLOCKED) {
+        if (userRelation && userRelation.status === UserRelationStatusEnum.BLOCKED) {
             return true;
         }
         return false;
@@ -60,12 +60,9 @@ export class UserRelationService {
     async createFriendRequest(requesterId: number, recipientId: number): Promise<void> {
 
         // 이미 친구 관계거나 상대가 나를 차단했다면 요청 불가
-        if (this.isFriendRelation(requesterId, recipientId) ||
-            this.isBlockedRelation(requesterId, recipientId)) {
-            console.log("fail");
+        if (await this.isFriendRelation(requesterId, recipientId) || await this.isBlockedRelation(requesterId, recipientId)) {
             return ;
         }
-
         // user-otherUser 인스턴스 생성
         const requesterDto = new CreateUserRelationDto();
         requesterDto.user = await this.usersService.findById(requesterId);
@@ -90,7 +87,7 @@ export class UserRelationService {
         if (userRelation) {
             // 이미 user-otherUser 객체가 존재한다면 status=block하고, otherUser-user 객체는 존재시 삭제
             userRelation.status = UserRelationStatusEnum.BLOCKED;
-            this.userRelationRepository.save(userRelation);
+            await this.userRelationRepository.save(userRelation);
             
             const otherRelation = await this.findUserRelation(otherUserId, userId);
             if (otherRelation) {
@@ -102,6 +99,7 @@ export class UserRelationService {
             const createUserRelationDto: CreateUserRelationDto = new CreateUserRelationDto();
             createUserRelationDto.user = await this.usersService.findById(userId);
             createUserRelationDto.otherUser = await this.usersService.findById(otherUserId);
+            createUserRelationDto.status = UserRelationStatusEnum.BLOCKED;
             await this.createUserRelation(createUserRelationDto);
         }
     }
@@ -110,11 +108,11 @@ export class UserRelationService {
     async establishFriendship(userId: number, otherUserId: number): Promise<void> {
         const userRelation = await this.findUserRelation(userId, otherUserId);
         userRelation.status = UserRelationStatusEnum.FRIEND;
-        this.userRelationRepository.save(userRelation);
+        await this.userRelationRepository.save(userRelation);
 
         const otherRelation = await this.findUserRelation(otherUserId, userId);
         otherRelation.status = UserRelationStatusEnum.FRIEND;
-        this.userRelationRepository.save(otherRelation);        
+        await this.userRelationRepository.save(otherRelation);        
     }
 
     // user기준으로 친구인 유저리스트 반환
