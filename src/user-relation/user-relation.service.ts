@@ -16,11 +16,16 @@ export class UserRelationService {
         ){}
     
     // user-otherUser 관계 객체 삭제
-    removeUserRelation(userId: number, otherUserId: number) {
-        this.userRelationRepository.delete({
-            user: { id: userId },
-            otherUser: { id: otherUserId}
+    async removeUserRelation(userId: number, otherUserId: number): Promise<void> {
+        const userRelation = await this.userRelationRepository.findOne({
+            where: {
+                user: { id: userId },
+                otherUser: { id: otherUserId }
+            }
         });
+        if (userRelation) {
+            this.userRelationRepository.remove(userRelation);
+        }
     }
     
     // user-otherUser 관계 객체 생성
