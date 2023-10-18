@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
 
 @Entity()
@@ -17,7 +17,8 @@ export class Notification {
     @Column()
     content: string;
 
-    @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP'})
+    // @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP'}) // postgresql 버전
+    @CreateDateColumn({ type: 'datetime' })
     createdAt: Date;
     
     @Column()

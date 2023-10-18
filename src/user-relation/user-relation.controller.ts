@@ -29,8 +29,8 @@ export class UserRelationController {
     @Delete('friends/:user_id')
     async deleteFriend(@Param('user_id') otherUserId: number): Promise<void> {
         const userId = 1;
-        await this.userRelationService.removeUserRelation(userId, otherUserId);
-        await this.userRelationService.removeUserRelation(otherUserId, userId);
+        this.userRelationService.removeUserRelation(userId, otherUserId);
+        this.userRelationService.removeUserRelation(otherUserId, userId);
     }
 
     @Put('friends/accept/:user_id')
@@ -42,8 +42,8 @@ export class UserRelationController {
     @Delete('reject/:user_id')
     async rejectUser(@Param('user_id') otherUserId: number): Promise<void> {
         const userId = 10;
-        await this.userRelationService.removeUserRelation(userId, otherUserId);
-        await this.userRelationService.removeUserRelation(otherUserId, userId);
+        this.userRelationService.removeUserRelation(userId, otherUserId);
+        this.userRelationService.removeUserRelation(otherUserId, userId);
     }
 
     @Post('block/:user_id')
@@ -55,7 +55,7 @@ export class UserRelationController {
     @Delete('block/:user_id')
     async unblockUser(@Param('user_id') otherUserId: number): Promise<void> {
         const userId = 1;
-        await this.userRelationService.removeUserRelation(userId, otherUserId);
+        this.userRelationService.removeUserRelation(userId, otherUserId);
     }
 
     @Get('block')

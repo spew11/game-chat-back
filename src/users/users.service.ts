@@ -17,38 +17,38 @@ export class UsersService {
         return this.userRepository.find();
     }
 
-    async createUser(userDto: CreateUserDto): Promise<User> {
-        return await this.userRepository.save(userDto);
+    createUser(userDto: CreateUserDto) {
+        return this.userRepository.save(userDto);
     }
 
-    async findById(id: number): Promise<User | null> {
-        return await this.userRepository.findOneBy({id});
+    findById(id: number) {
+        return this.userRepository.findOneBy({id});
     }
     
-    async removeUser(id: number): Promise<void> {
-        await this.userRepository.delete(id);
+    removeUser(id: number) {
+        this.userRepository.delete(id);
     }
 
-    async findByEmail(email: string): Promise <User | null> {
+    findByEmail(email: string) {
         const options: FindOneOptions<User> = { where: { email }};
-        return await this.userRepository.findOne(options);
+        return this.userRepository.findOne(options);
     }
 
     async updateUser(id: number, userDto: UpdateUserDetailsDto): Promise<void> {
         const user = await this.findById(id);
         Object.assign(user, userDto);
-        await this.userRepository.save(user);
+        this.userRepository.save(user);
     }
 
     async updateUserWin(id: number): Promise<void> {
         const user = await this.findById(id);
         user.total_wins += 1;
-        await this.userRepository.save(user);
+        this.userRepository.save(user);
     }
 
     async updateUserlose(id: number): Promise<void> {
         const user = await this.findById(id);
         user.total_losses += 1;
-        await this.userRepository.save(user);
+        this.userRepository.save(user);
     }
 }

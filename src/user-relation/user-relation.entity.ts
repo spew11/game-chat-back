@@ -15,9 +15,10 @@ export class UserRelation {
     @JoinColumn({ name: 'otherUserId' })
     otherUser: User;
 
-    @Column({
-        type: 'enum',
-        enum: UserRelationStatusEnum,
-    })
+    // @Column({
+    //     type: 'enum',
+    //     enum: UserRelationStatusEnum,
+    // }) // sqlite에서 enum타입 지원안하므로 잠시 지움
+    @Column()
     status: UserRelationStatusEnum;
 }
