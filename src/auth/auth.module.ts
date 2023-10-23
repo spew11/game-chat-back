@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [UsersModule, ConfigModule],
   controllers: [AuthController],
-  providers: [AuthService]
+  providers: [AuthService],
+  exports: [AuthService]
 })
 export class AuthModule {}

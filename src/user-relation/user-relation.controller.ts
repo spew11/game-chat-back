@@ -1,8 +1,10 @@
-import { Controller, Param, Post, Delete, Get, Put } from '@nestjs/common';
+import { Controller, Param, Post, Delete, Get, Put, UseGuards } from '@nestjs/common';
 import { UserRelationService } from './user-relation.service';
 import { ShowFriendsDto } from './dtos/show-friends.dto';
 import { ShowBlockedUsersDto } from './dtos/show-blocked-users.dto';
+import { AuthGuard } from 'src/guards/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('users')
 export class UserRelationController {
     constructor(private userRelationService: UserRelationService){}

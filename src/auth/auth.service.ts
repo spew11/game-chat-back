@@ -1,5 +1,4 @@
-import { Injectable, Res, Req } from '@nestjs/common';
-import { Request, Response } from 'express'
+import { Injectable} from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
@@ -52,4 +51,11 @@ export class AuthService {
         });
         return response.data.email;
     }
+    
+    // isValidateRequest(request: any): boolean {
+    //     if (request.session && request.session.email) {
+    //         return true;
+    //     }
+    //     throw new UnauthorizedException('로그인이 필요합니다.');
+    // }
 }
