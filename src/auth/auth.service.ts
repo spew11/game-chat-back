@@ -42,8 +42,7 @@ export class AuthService {
         return response.data.access_token;
     }
 
-    async getEmail(state: string, code: string): Promise<string> {
-        const accessToken = await this.getAccessToken(state, code);
+    async getEmail(accessToken: string): Promise<string> {
         const response = await axios.get(this.USER_PROFILE_URL, {
             headers: {
                 'Authorization': 'Bearer ' + accessToken
@@ -51,11 +50,4 @@ export class AuthService {
         });
         return response.data.email;
     }
-    
-    // isValidateRequest(request: any): boolean {
-    //     if (request.session && request.session.email) {
-    //         return true;
-    //     }
-    //     throw new UnauthorizedException('로그인이 필요합니다.');
-    // }
 }

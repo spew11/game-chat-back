@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Res, Req, Post, Body } from '@nestjs/common';
+import { Controller, Get, Query, Res, Req, Post, Body, UnauthorizedException } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { UsersService } from 'src/users/users.service';
@@ -20,21 +20,33 @@ export class AuthController {
 
     @Get('callback')
     async userRedirect(@Req() req: Request, @Res() res: Response, @Query('code') code: string, @Query('state') state: string): Promise<void> {
-        const userEmail = await this.authService.getEmail(state, code);
-        const user = this.usersService.findByEmail(userEmail);
+        const accessToken = await this.authService.getAccessToken(state, code);
+        const userEmail = await this.authService.getEmail(accessToken);
+        const user = await this.usersService.findByEmail(userEmail);
         if (user) {
             req.session.email = userEmail;
             res.send({ redirect: "home" });
         }
         else {
+            res.cookie('access_token', accessToken, {
+                httpOnly: true,
+                sameSite: 'strict',
+                maxAge: 720000,
+            });
             res.send({ redirect: "register"});
         }
     }
 
     @Post('register')
     userAdd(@Req() req: Request, @Body() createUserDto: CreateUserDto){
-        createUserDto.email = req.session.email;
-        this.usersService.createUser(createUserDto);
+        const accessToken = req.cookies['access_token'];
+        if (accessToken) {
+            createUserDto.email = req.session.email;
+            this.usersService.createUser(createUserDto);
+        }
+        else {
+            throw new UnauthorizedException('로그인이 필요합니다.');
+        }
     }
 }
 

@@ -17,11 +17,11 @@ export class UsersService {
         return this.userRepository.find();
     }
 
-    createUser(userDto: CreateUserDto) {
+    createUser(userDto: CreateUserDto): Promise<User> {
         return this.userRepository.save(userDto);
     }
 
-    findById(id: number) {
+    findById(id: number): Promise<User> {
         return this.userRepository.findOneBy({id});
     }
     
@@ -30,13 +30,12 @@ export class UsersService {
         this.userRepository.remove(user);
     }
 
-    findByEmail(email: string) {
+    findByEmail(email: string): Promise<User> {
         const options: FindOneOptions<User> = { where: { email }};
         return this.userRepository.findOne(options);
     }
 
-    async updateUser(id: number, userDto: UpdateUserDetailsDto): Promise<void> {
-        const user = await this.findById(id);
+    updateUser(user: User, userDto: UpdateUserDetailsDto): void {
         Object.assign(user, userDto);
         this.userRepository.save(user);
     }

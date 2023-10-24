@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { UserRelation } from './user-relation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,18 +23,19 @@ export class UserRelationService {
                 otherUser: { id: otherUserId }
             }
         });
-        if (userRelation) {
-            this.userRelationRepository.remove(userRelation);
+        if (!userRelation) {
+            throw new NotFoundException('존재하지 않는 유저 관계입니다.');
         }
+        this.userRelationRepository.remove(userRelation);
     }
     
     // user-otherUser 관계 객체 생성
-    createUserRelation(createUserRelationDto: CreateUserRelationDto) {
+    createUserRelation(createUserRelationDto: CreateUserRelationDto): Promise<UserRelation> {
         return this.userRelationRepository.save(createUserRelationDto);
     }
     
     // user-otherUser 관계 객체 찾기
-    findUserRelation(userId: number, otherUserId: number) {
+    findUserRelation(userId: number, otherUserId: number): Promise<UserRelation> {
         return this.userRelationRepository.findOne({
             where: {
                 user: { id: userId},
@@ -62,39 +63,38 @@ export class UserRelationService {
     }
 
     // user-otherUser(status=friend_request)객체 1개, otherUser-user(status=pending_approval) 객체 1개, 총 2개의 객체 생성
-    async createFriendRequest(requesterId: number, recipientId: number): Promise<void> {
+    async createFriendRequest(requester: User, recipient: User): Promise<void> {
 
         // 이미 친구 관계거나 상대가 나를 차단했다면 요청 불가
-        if (await this.isFriendRelation(requesterId, recipientId) || await this.isBlockedRelation(requesterId, recipientId)) {
+        if (await this.isFriendRelation(requester.id, recipient.id) || await this.isBlockedRelation(requester.id, recipient.id)) {
             return ;
         }
         // user-otherUser 인스턴스 생성
         const requesterDto = new CreateUserRelationDto();
-        requesterDto.user = await this.usersService.findById(requesterId);
-        requesterDto.otherUser = await this.usersService.findById(recipientId);
+        requesterDto.user = requester;
+        requesterDto.otherUser = recipient;
         requesterDto.status = UserRelationStatusEnum.FRIEND_REQUEST;
-        console.log(requesterDto);
         this.userRelationRepository.save(requesterDto);
 
         // otherUser-user 인스턴스 생성
         const recipientDto = new CreateUserRelationDto();
-        recipientDto.user = await this.usersService.findById(recipientId);
-        recipientDto.otherUser = await this.usersService.findById(requesterId);
+        recipientDto.user = recipient;
+        recipientDto.otherUser = requester;
         recipientDto.status = UserRelationStatusEnum.PENDING_APPROVAL;
         this.userRelationRepository.save(recipientDto);
 
     }
 
     // user가 otherUser 차단
-    async createBlockRelation(userId: number, otherUserId: number): Promise<void> {
-        const userRelation = await this.findUserRelation(userId, otherUserId);
+    async createBlockRelation(user: User, otherUser: User): Promise<void> {
+        const userRelation = await this.findUserRelation(user.id, otherUser.id);
         
         if (userRelation) {
             // 이미 user-otherUser 객체가 존재한다면 status=block하고, otherUser-user 객체는 존재시 삭제
             userRelation.status = UserRelationStatusEnum.BLOCKED;
             this.userRelationRepository.save(userRelation);
             
-            const otherRelation = await this.findUserRelation(otherUserId, userId);
+            const otherRelation = await this.findUserRelation(otherUser.id, user.id);
             if (otherRelation) {
                 this.userRelationRepository.remove(otherRelation);
             }
@@ -102,8 +102,8 @@ export class UserRelationService {
         else {
             // user-otherUser 객체가 존재하지 않는다면 차단 관계 생성
             const createUserRelationDto: CreateUserRelationDto = new CreateUserRelationDto();
-            createUserRelationDto.user = await this.usersService.findById(userId);
-            createUserRelationDto.otherUser = await this.usersService.findById(otherUserId);
+            createUserRelationDto.user = user;
+            createUserRelationDto.otherUser = otherUser;
             createUserRelationDto.status = UserRelationStatusEnum.BLOCKED;
             this.createUserRelation(createUserRelationDto);
         }
@@ -112,10 +112,15 @@ export class UserRelationService {
     // user와 otherUser가 친구가 됌
     async establishFriendship(userId: number, otherUserId: number): Promise<void> {
         const userRelation = await this.findUserRelation(userId, otherUserId);
+        const otherRelation = await this.findUserRelation(otherUserId, userId);
+        
+        if (!userRelation || !otherRelation) {
+            throw new NotFoundException('존재하지 않는 관계입니다.');
+        }
+
         userRelation.status = UserRelationStatusEnum.FRIEND;
         this.userRelationRepository.save(userRelation);
 
-        const otherRelation = await this.findUserRelation(otherUserId, userId);
         otherRelation.status = UserRelationStatusEnum.FRIEND;
         this.userRelationRepository.save(otherRelation);        
     }
