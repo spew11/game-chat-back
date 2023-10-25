@@ -1,4 +1,4 @@
 export class ShowFriendsDto {
-    otherUserId: number;
-    nickname: string;
+  otherUserId: number;
+  nickname: string;
 }

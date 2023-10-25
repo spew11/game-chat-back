@@ -1,4 +1,4 @@
 export class ShowBlockedUsersDto {
-    otherUserId: number;
-    nickname: string;
+  otherUserId: number;
+  nickname: string;
 }

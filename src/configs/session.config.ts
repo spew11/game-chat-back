@@ -6,7 +6,7 @@ declare module 'express-session' {
   }
 }
 
-var session = require('express-session');
+const session = require('express-session');
 const MemoryStore = require('memorystore')(session);
 
 export function sessionMiddleware(configService: ConfigService) {
@@ -20,6 +20,6 @@ export function sessionMiddleware(configService: ConfigService) {
       httpOnly: true,
       sameSite: 'strict',
     },
-    name: 'session-cookie'
+    name: 'session-cookie',
   });
 }

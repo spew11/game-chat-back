@@ -1,5 +1,5 @@
 export class ShowUserOverviewDto {
-    nickname: string;
-    ladderPoint: number;
-    avatar: string;
+  nickname: string;
+  ladderPoint: number;
+  avatar: string;
 }

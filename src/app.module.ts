@@ -8,14 +8,7 @@ import { TestService } from './test.service';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [
-    AuthModule,
-    TypeOrmModule.forRoot(typeORMConfig),
-    UserRelationModule,
-    UsersModule,
-    ConfigModule.forRoot()
-  ],
-  providers: [TestService]
+  imports: [AuthModule, TypeOrmModule.forRoot(typeORMConfig), UserRelationModule, UsersModule, ConfigModule.forRoot()],
+  providers: [TestService],
 })
-export class AppModule { 
-}
+export class AppModule {}

@@ -8,7 +8,7 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    
+
     if (request.session && request.session.email) {
       const user: User = await this.usersService.findByEmail(request.session.email);
       if (!user) {
