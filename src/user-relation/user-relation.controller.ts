@@ -4,7 +4,7 @@ import { ShowFriendsDto } from './dtos/show-friends.dto';
 import { ShowBlockedUsersDto } from './dtos/show-blocked-users.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/user.decorator';
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'src/users/user.entity';
 import { UserByIdPipe } from 'src/pipes/UserById.pipe';
 
 @UseGuards(AuthGuard)

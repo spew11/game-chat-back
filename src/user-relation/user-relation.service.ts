@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from 'src/users/users.service';
 import { UserRelationStatusEnum } from 'src/user-relation/enums/user-relation-status.enum';
 import { CreateUserRelationDto } from './dtos/create-user-relation.dto';
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'src/users/user.entity';
 
 @Injectable()
 export class UserRelationService {
