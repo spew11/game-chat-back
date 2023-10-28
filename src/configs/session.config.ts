@@ -18,7 +18,7 @@ export function sessionMiddleware(configService: ConfigService) {
     cookie: {
       maxAge: 30 * 60 * 1000,
       httpOnly: true,
-      sameSite: 'strict',
+      // sameSite: 'strict',
     },
     name: 'session-cookie',
   });

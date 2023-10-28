@@ -1,20 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { UsersService } from 'src/users/users.service';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private usersService: UsersService,
-    private configService: ConfigService,
-  ) {}
+  constructor(private configService: ConfigService) {}
 
   private readonly AUTHORIZATION_URI = 'https://api.intra.42.fr/oauth/authorize';
   private readonly TOKEN_URL = 'https://api.intra.42.fr/oauth/token';
   private readonly USER_PROFILE_URL = 'https://api.intra.42.fr/v2/me';
-  private readonly CALLBACK_URI = `http://localhost:${this.configService.get<string>('SERVER_PORT')}/auth/callback`;
 
   generateRandomString(length: number): string {
     return randomBytes(Math.ceil(length / 2))
@@ -26,7 +21,7 @@ export class AuthService {
     const authorizationUrl =
       `${this.AUTHORIZATION_URI}?` +
       `client_id=${this.configService.get<string>('CLIENT_ID')}&` +
-      `redirect_uri=${this.CALLBACK_URI}&` +
+      `redirect_uri=${this.configService.get<string>('CALLBACK_URI')}&` +
       `response_type=code&scope=public&state=${state}`;
     return authorizationUrl;
   }
@@ -37,7 +32,7 @@ export class AuthService {
       client_id: this.configService.get<string>('CLIENT_ID'),
       client_secret: this.configService.get<string>('CLIENT_SECRET'),
       code: code,
-      redirect_uri: this.CALLBACK_URI,
+      redirect_uri: this.configService.get<string>('CALLBACK_URI'),
       state: state,
     };
     const response = await axios.post(this.TOKEN_URL, data);

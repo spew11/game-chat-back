@@ -14,10 +14,10 @@ export class AuthController {
   @Get('sign-in')
   signIn(@Res() res: Response) {
     const state = this.authService.generateRandomString(16);
-    res.redirect(this.authService.getRedirectUrl(state));
+    res.status(200).send({ data: this.authService.getRedirectUrl(state) });
   }
 
-  @Get('callback')
+  @Get('user-redirect')
   async userRedirect(
     @Req() req: Request,
     @Res() res: Response,
@@ -33,7 +33,7 @@ export class AuthController {
     } else {
       res.cookie('access_token', accessToken, {
         httpOnly: true,
-        sameSite: 'strict',
+        // sameSite: 'strict',
         maxAge: 720000,
       });
       res.send({ redirect: 'register' });
