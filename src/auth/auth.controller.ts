@@ -41,10 +41,10 @@ export class AuthController {
   }
 
   @Post('register')
-  userAdd(@Req() req: Request, @Body() createUserDto: CreateUserDto) {
+  async userAdd(@Req() req: Request, @Body() createUserDto: CreateUserDto): Promise<void> {
     const accessToken = req.cookies['access_token'];
     if (accessToken) {
-      createUserDto.email = req.session.email;
+      createUserDto.email = await this.authService.getEmail(accessToken);
       this.usersService.createUser(createUserDto);
     } else {
       throw new UnauthorizedException('로그인이 필요합니다.');
