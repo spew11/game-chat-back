@@ -20,6 +20,6 @@ async function bootstrap() {
   await testService.addUser();
   await testService.addUserRelation();
 
-  await app.listen(3000);
+  await app.listen(configService.get<string>('SERVER_PORT'));
 }
 bootstrap();
