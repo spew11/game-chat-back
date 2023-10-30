@@ -1,11 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
+import { Session } from 'express-session';
 
 @Injectable()
 export class AuthService {
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private configService: ConfigService,
+    private sessions: Record<string, Session>,
+  ) {}
 
   private readonly AUTHORIZATION_URI = 'https://api.intra.42.fr/oauth/authorize';
   private readonly TOKEN_URL = 'https://api.intra.42.fr/oauth/token';
@@ -46,5 +50,13 @@ export class AuthService {
       },
     });
     return response.data.email;
+  }
+
+  loginUser(userEmail: string, session: Session): void {
+    if (this.sessions[userEmail]) {
+      new UnauthorizedException('이미 다른 장치에서 로그인되어 있습니다.');
+    }
+    this.sessions[userEmail] = session;
+    session.email = userEmail;
   }
 }
