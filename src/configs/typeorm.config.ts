@@ -1,22 +1,29 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from './snake-naming.strategy';
+import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
 
-export const typeORMConfig: TypeOrmModuleOptions = {
-  type: 'sqlite',
-  database: 'transendence.sqlite',
-  autoLoadEntities: true,
-  synchronize: true,
-  logging: true,
-  dropSchema: true,
-  namingStrategy: new SnakeNamingStrategy(),
-  // type: 'postgres',
-  // host: 'localhost',
-  // port: 5432,
-  // username: 'postgres',
-  // password: '1',
-  // database: 'postgres',
-  // entities: [__dirname + '/../**/*.entity.{js, ts}'],
+@Injectable()
+export class TypeORMConfigProvider {
+  constructor(private configService: ConfigService) {}
+  createTypeOrmOptions(): TypeOrmModuleOptions {
+    return {
+      namingStrategy: new SnakeNamingStrategy(),
+      type: 'postgres',
+      host: this.configService.get<string>('POSTGRES_HOST'),
+      port: 5432,
+      username: this.configService.get<string>('POSTGRES_USER'),
+      password: this.configService.get<string>('POSTGRES_PASSWORD'),
+      database: this.configService.get<string>('POSTGRES_DB'),
+      entities: [__dirname + '/../**/*.entity.{js, ts}'],
+      synchronize: this.configService.get<boolean>('POSTGRES_SYNCHRONIZE'),
+      dropSchema: this.configService.get<boolean>('POSTGRES_DROP_SCHEMA'),
+    };
+  }
+  // type: 'sqlite',
+  // database: 'transendence.sqlite',
+  // autoLoadEntities: true,
   // synchronize: true,
+  // logging: true,
   // dropSchema: true,
-  // namingStrategy: new SnakeNamingStrategy(),
-};
+}
