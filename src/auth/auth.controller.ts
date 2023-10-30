@@ -28,7 +28,7 @@ export class AuthController {
     const userEmail = await this.authService.getEmail(accessToken);
     const user = await this.usersService.findByEmail(userEmail);
     if (user) {
-      this.authService.loginUser(userEmail, req.session);
+      req.session.email = userEmail;
       res.send({ redirect: 'home' });
     } else {
       // res.cookie('access_token', accessToken, {
