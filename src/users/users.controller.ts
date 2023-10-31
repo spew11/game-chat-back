@@ -7,6 +7,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/user.decorator';
 import { User } from './user.entity';
 import { UserByIdPipe } from 'src/pipes/UserById.pipe';
+import { ShowUserInforamtionDto } from './dto/show-user-information';
 
 @UseGuards(AuthGuard)
 @Controller('users')
@@ -28,8 +29,19 @@ export class UsersController {
   }
 
   @Get(':user_id')
-  async getUserDetails(@Param('user_id', UserByIdPipe) user: User): Promise<ShowUserDetailsDto> {
+  getUserDetails(@Param('user_id', UserByIdPipe) user: User): ShowUserDetailsDto {
     const userDto = new ShowUserDetailsDto();
+    userDto.avatar = user.avatar;
+    userDto.bio = user.bio;
+    userDto.email = user.email;
+    userDto.ladderPoint = user.ladderPoint;
+    userDto.nickname = user.nickname;
+    return userDto;
+  }
+
+  @Get('me')
+  getUserInfomation(@GetUser() user: User): ShowUserInforamtionDto {
+    const userDto = new ShowUserInforamtionDto();
     userDto.avatar = user.avatar;
     userDto.bio = user.bio;
     userDto.email = user.email;
