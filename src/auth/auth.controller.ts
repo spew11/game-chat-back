@@ -28,7 +28,7 @@ export class AuthController {
     const userEmail = await this.authService.getEmail(accessToken);
     const user = await this.usersService.findByEmail(userEmail);
     if (user) {
-      req.session.email = userEmail;
+      this.authService.loginUser(req, user);
       res.send({ redirect: 'home' });
     } else {
       // res.cookie('access_token', accessToken, {
@@ -47,8 +47,7 @@ export class AuthController {
     if (accessToken) {
       const userEmail = await this.authService.getEmail(accessToken);
       createUserDto.email = userEmail;
-      this.usersService.createUser(createUserDto);
-      req.session.email = userEmail;
+      this.authService.joinUser(req, createUserDto); // joinUser()에 로그인 로직도 있음
     } else {
       throw new UnauthorizedException('로그인이 필요합니다.');
     }

@@ -19,7 +19,7 @@ export function sessionMiddleware(configService: ConfigService) {
   return session({
     secret: configService.get<string>('SESSION_SECRET'),
     resave: true, // 세션 갱신
-    saveUninitialized: false,
+    saveUninitialized: false, // 로그인한 사용자에게만 세션 ID할당하기
     store: new RedisStore({ client: redisClient }),
     cookie: {
       maxAge: 30 * 60 * 1000,
@@ -29,3 +29,5 @@ export function sessionMiddleware(configService: ConfigService) {
     name: 'session-cookie',
   });
 }
+
+export { redisClient };

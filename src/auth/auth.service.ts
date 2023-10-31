@@ -1,11 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Request } from 'express';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
+import { redisClient } from '@configs/session.config';
+import { User } from 'src/users/user.entity';
+import { UsersService } from 'src/users/users.service';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private configService: ConfigService,
+    private usersService: UsersService,
+  ) {}
 
   private readonly AUTHORIZATION_URI = 'https://api.intra.42.fr/oauth/authorize';
   private readonly TOKEN_URL = 'https://api.intra.42.fr/oauth/token';
@@ -46,5 +54,23 @@ export class AuthService {
       },
     });
     return response.data.email;
+  }
+
+  async loginUser(req: Request, user: User): Promise<void> {
+    const sessionId = await redisClient.hget(`user:${user.id}`, user.email);
+    if (sessionId) {
+      throw new UnauthorizedException('이미 다른 기기에서 로그인되었습니다.');
+    }
+    req.session.email = user.email;
+    await redisClient.set(`user:${user.id}`, user.email);
+  }
+
+  async joinUser(req: Request, createUserDto: CreateUserDto): Promise<void> {
+    const user = await this.usersService.findByEmail(createUserDto.email);
+    if (user) {
+      throw new ConflictException('이미 가입된 유저입니다.');
+    }
+    this.usersService.createUser(createUserDto);
+    this.loginUser(req, user);
   }
 }
