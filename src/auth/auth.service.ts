@@ -62,7 +62,7 @@ export class AuthService {
       throw new UnauthorizedException('이미 다른 기기에서 로그인되었습니다.');
     }
     req.session.email = user.email;
-    await redisClient.set(`user:${user.id}`, user.email);
+    await redisClient.hset(`user:${user.id}`, user.email);
   }
 
   async joinUser(req: Request, createUserDto: CreateUserDto): Promise<void> {
