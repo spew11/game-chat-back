@@ -1,8 +1,4 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { ChannelBannedUser } from 'src/channel/entities/channel-bannedUser.entity';
-import { ChannelRelation } from 'src/channel/entities/channel-relation.entity';
-import { ChannelMutedUser } from 'src/channel/entities/channel-mutedUser.entity';
-import { Channel } from 'src/channel/entities/channel.entity';
 
 @Entity()
 export class User {
@@ -26,16 +22,4 @@ export class User {
 
   @Column({ default: true })
   is2fa: boolean;
-
-  @OneToMany(() => Channel, (channel) => channel.user)
-  	channels: Channel[];
-
-  @OneToMany(() => ChannelRelation, (channelRelation) => channelRelation.user)
-  	channelRelations: ChannelRelation[];
-
-  @OneToMany(() => ChannelBannedUser, (channelBannedUser) => channelBannedUser.user)
-  	channelBannedUsers: ChannelBannedUser[];
-
-  @OneToMany(() => ChannelMutedUser, (channelMutedUser) => channelMutedUser.user)
- 	channelMutedUsers:  ChannelMutedUser[];
 }
