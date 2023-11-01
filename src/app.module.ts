@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { TestService } from './test.service';
 import { ConfigModule } from '@nestjs/config';
 import { NotificationsModule } from './notifications/notifications.module';
+import { ChannelModule } from './channel/channel.module';
 
 @Module({
   imports: [
@@ -16,6 +17,8 @@ import { NotificationsModule } from './notifications/notifications.module';
     }),
     UserRelationModule,
     UsersModule,
+    AuthModule,
+    ChannelModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
