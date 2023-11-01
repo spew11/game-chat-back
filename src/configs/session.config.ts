@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 
 const session = require('express-session');
-const RedisStore = require('connect-redis').default;
+const RedisStore = require('connect-redis')(session);
 const redis = require('redis');
 
 const redisClient = redis.createClient({
