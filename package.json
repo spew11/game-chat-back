@@ -26,6 +26,7 @@
     "@nestjs/common": "^10.2.7",
     "@nestjs/config": "^3.1.1",
     "@nestjs/core": "^10.0.0",
+    "@nestjs/platform-express": "^10.2.7",
     "@nestjs/typeorm": "^10.0.0",
     "@types/express-session": "^1.17.9",
     "@types/redis": "^2.8.31",
@@ -34,12 +35,10 @@
     "cookie-parser": "^1.4.6",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
-    "memorystore": "^1.6.7",
     "pg": "^8.11.3",
     "redis": "^4.6.10",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "sqlite3": "^5.1.6",
     "typeorm": "^0.3.17"
   },
   "devDependencies": {
