@@ -13,7 +13,6 @@ export class UserRelationService {
     private userRelationRepository: Repository<UserRelation>,
   ) {}
 
-  // transaction으로 묶어야됌
   async deleteFriendship(userId: number, otherUserId: number): Promise<void> {
     const userSide = await this.findUserRelation(userId, otherUserId);
     const theOtherSide = await this.findUserRelation(otherUserId, userId);
@@ -108,7 +107,7 @@ export class UserRelationService {
     }
   }
 
-  // user가 otherUser 차단
+  // user가 otherUser 차단(친구관계여도 무조건 차단함)
   async createBlockRelation(user: User, otherUser: User): Promise<void> {
     const userSide = await this.findUserRelation(user.id, otherUser.id);
 

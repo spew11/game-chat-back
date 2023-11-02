@@ -65,12 +65,11 @@ export class AuthService {
     redisCli.hSet(`user:${user.id}`.toString(), { email: user.email });
   }
 
-  async joinUser(req: Request, createUserDto: CreateUserDto): Promise<void> {
+  async joinUser(req: Request, createUserDto: CreateUserDto): Promise<User> {
     const existUser = await this.usersService.findByEmail(createUserDto.email);
     if (existUser) {
       throw new ConflictException('이미 가입된 유저입니다.');
     }
-    const newUser = await this.usersService.createUser(createUserDto);
-    this.loginUser(req, newUser);
+    return this.usersService.createUser(createUserDto);
   }
 }

@@ -1,8 +1,23 @@
-import { Controller, Get, Query, Res, Req, Post, Body, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Res,
+  Req,
+  Post,
+  Body,
+  UnauthorizedException,
+  InternalServerErrorException,
+  UseGuards,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UsersService } from 'src/users/users.service';
+import { GetUser } from './user.decorator';
+import { User } from 'src/users/user.entity';
+import { redisCli } from '@configs/session.config';
+import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -10,6 +25,20 @@ export class AuthController {
     private authService: AuthService,
     private usersService: UsersService,
   ) {}
+
+  @UseGuards(AuthGuard)
+  @Post('logout')
+  logout(@Req() req: Request, @Res() res: Response, @GetUser() user: User) {
+    req.session.destroy((err) => {
+      if (err) {
+        throw new InternalServerErrorException();
+      }
+      res.clearCookie('access_token');
+    });
+    const sessionKey = `user:${user.id}`;
+    redisCli.hdel(sessionKey);
+    res.send('로그아웃 성공');
+  }
 
   @Get('sign-in')
   signIn(@Res() res: Response, @Query('callback_uri') callbackUri: string) {
@@ -37,15 +66,16 @@ export class AuthController {
   }
 
   @Post('register')
-  async userAdd(@Req() req: Request, @Body() createUserDto: CreateUserDto): Promise<void> {
+  async userAdd(@Req() req: Request, @Res() res: Response, @Body() createUserDto: CreateUserDto): Promise<void> {
     const accessToken = req.cookies['access_token'];
     if (accessToken) {
       const userEmail = await this.authService.getEmail(accessToken);
       createUserDto.email = userEmail;
-      this.authService.joinUser(req, createUserDto); // joinUser()에 로그인 로직도 있음
+      const newUser = await this.authService.joinUser(req, createUserDto);
+      this.authService.loginUser(req, newUser);
+      res.send({ redirect: 'home' });
     } else {
-      throw new UnauthorizedException('로그인이 필요합니다.');
+      throw new UnauthorizedException('42로그인이 필요합니다.');
     }
-    this.authService.joinUser(req, createUserDto);
   }
 }
