@@ -7,6 +7,8 @@ import { redisClient } from '@configs/session.config';
 import { User } from 'src/users/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { HttpException } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
@@ -25,11 +27,11 @@ export class AuthService {
       .slice(0, length);
   }
 
-  getRedirectUrl(state: string): string {
+  getRedirectUrl(state: string, callbackUri: string): string {
     const authorizationUrl =
       `${this.AUTHORIZATION_URI}?` +
       `client_id=${this.configService.get<string>('CLIENT_ID')}&` +
-      `redirect_uri=${this.configService.get<string>('CALLBACK_URI')}&` +
+      `redirect_uri=${callbackUri}&` +
       `response_type=code&scope=public&state=${state}`;
     return authorizationUrl;
   }
@@ -62,15 +64,15 @@ export class AuthService {
       throw new UnauthorizedException('이미 다른 기기에서 로그인되었습니다.');
     }
     req.session.email = user.email;
-    await redisClient.set(`user:${user.id}`, user.email);
+    await redisClient.hset(`user:${user.id}`, user.email);
   }
 
   async joinUser(req: Request, createUserDto: CreateUserDto): Promise<void> {
-    const user = await this.usersService.findByEmail(createUserDto.email);
-    if (user) {
+    const existUser = await this.usersService.findByEmail(createUserDto.email);
+    if (existUser) {
       throw new ConflictException('이미 가입된 유저입니다.');
     }
-    this.usersService.createUser(createUserDto);
-    this.loginUser(req, user);
+    const newUser = await this.usersService.createUser(createUserDto);
+    this.loginUser(req, newUser);
   }
 }

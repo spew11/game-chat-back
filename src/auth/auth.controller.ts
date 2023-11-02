@@ -1,20 +1,20 @@
 import { Controller, Get, Query, Res, Req, Post, Body, UnauthorizedException } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { UsersService } from 'src/users/users.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
     private usersService: UsersService,
-  ) {}
-
+    ) {}
+    
   @Get('sign-in')
-  signIn(@Res() res: Response) {
+  signIn(@Res() res: Response, @Query('callback_uri') callbackUri: string) {
     const state = this.authService.generateRandomString(16);
-    res.status(200).send({ data: this.authService.getRedirectUrl(state) });
+    res.status(200).send({ data: this.authService.getRedirectUrl(state, callbackUri) });
   }
 
   @Get('user-redirect')
