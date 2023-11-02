@@ -7,8 +7,6 @@ import { redisClient } from '@configs/session.config';
 import { User } from 'src/users/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { HttpException } from '@nestjs/common';
-import { HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
