@@ -26,22 +26,22 @@ export class UserRelationController {
 
   @Post('friends/:user_id/request')
   requestFriend(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): void {
-    this.userRelationService.createFriendRequest(user, otherUser); //복잡함
+    this.userRelationService.createFriendRequest(user, otherUser);
   }
 
   @Delete('friends/:user_id/disconnect')
-  deleteFriend(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): void {
-    this.userRelationService.deleteFriendship(user.id, otherUser.id);
+  deleteFriend(@GetUser() user: User, @Param('user_id') otherUserId: number): void {
+    this.userRelationService.deleteFriendship(user.id, otherUserId);
   }
 
   @Put('friends/:user_id/accept')
-  acceptFriend(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): void {
-    this.userRelationService.establishFriendship(user.id, otherUser.id);
+  acceptFriend(@GetUser() user: User, @Param('user_id') otherUserId: number): void {
+    this.userRelationService.establishFriendship(user.id, otherUserId);
   }
 
   @Delete('friends/:user_id/reject')
-  rejectUser(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): void {
-    this.userRelationService.rejectFriendship(user.id, otherUser.id);
+  rejectUser(@GetUser() user: User, @Param('user_id') otherUserId: number): void {
+    this.userRelationService.rejectFriendship(user.id, otherUserId);
   }
 
   @Post('block/:user_id')
@@ -50,8 +50,8 @@ export class UserRelationController {
   }
 
   @Delete('block/:user_id')
-  unblockUser(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): void {
-    this.userRelationService.unblockUserRelation(user.id, otherUser.id);
+  unblockUser(@GetUser() user: User, @Param('user_id') otherUserId: number): void {
+    this.userRelationService.unblockUserRelation(user.id, otherUserId);
   }
 
   @Get('block')

@@ -14,10 +14,11 @@ export class UserRelationService {
   ) {}
 
   // transaction으로 묶어야됌
-  deleteFriendship(userId: number, otherUserId: number) {
-    if (this.isFriendRelation(userId, otherUserId)) {
-      this.removeUserRelation(userId, otherUserId);
-      this.removeUserRelation(otherUserId, userId);
+  async deleteFriendship(userId: number, otherUserId: number): Promise<void> {
+    const userSide = await this.findUserRelation(userId, otherUserId);
+    const theOtherSide = await this.findUserRelation(otherUserId, userId);
+    if (userSide?.status === UserRelationStatusEnum.FRIEND && theOtherSide?.status === UserRelationStatusEnum.FRIEND) {
+      this.userRelationRepository.remove([userSide, theOtherSide]);
     } else {
       throw new NotFoundException('잘못된 요청입니다.');
     }
@@ -30,8 +31,7 @@ export class UserRelationService {
       userSide?.status === UserRelationStatusEnum.PENDING_APPROVAL &&
       theOtherSide?.status === UserRelationStatusEnum.FRIEND_REQUEST
     ) {
-      this.removeUserRelation(userId, otherUserId);
-      this.removeUserRelation(otherUserId, userId);
+      this.userRelationRepository.remove([userSide, theOtherSide]);
     }
   }
 
@@ -144,9 +144,8 @@ export class UserRelationService {
       theOtherSide?.status === UserRelationStatusEnum.FRIEND_REQUEST
     ) {
       userSide.status = UserRelationStatusEnum.FRIEND;
-      this.userRelationRepository.save(userSide);
       theOtherSide.status = UserRelationStatusEnum.FRIEND;
-      this.userRelationRepository.save(theOtherSide);
+      this.userRelationRepository.save([userSide, theOtherSide]);
     } else {
       throw new NotFoundException('잘못된 요청입니다.');
     }
