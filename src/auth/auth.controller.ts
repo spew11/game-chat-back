@@ -31,11 +31,6 @@ export class AuthController {
       this.authService.loginUser(req, user);
       res.send({ redirect: 'home' });
     } else {
-      // res.cookie('access_token', accessToken, {
-      //   httpOnly: true,
-      //   // sameSite: 'strict',
-      //   maxAge: 720000,
-      // });
       res.header('Set-Cookie', [`access_token=${accessToken}; SameSite=None; Secure; Max-Age=720000; HttpOnly=false`]);
       res.send({ redirect: 'register' });
     }
@@ -51,5 +46,6 @@ export class AuthController {
     } else {
       throw new UnauthorizedException('로그인이 필요합니다.');
     }
+    this.authService.joinUser(req, createUserDto);
   }
 }

@@ -3,10 +3,10 @@ import { Request } from 'express';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
-import { redisClient } from '@configs/session.config';
 import { User } from 'src/users/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { redisCli } from '@configs/session.config';
 
 @Injectable()
 export class AuthService {
@@ -57,12 +57,12 @@ export class AuthService {
   }
 
   async loginUser(req: Request, user: User): Promise<void> {
-    const sessionId = await redisClient.hget(`user:${user.id}`, user.email);
-    if (sessionId) {
+    const sessionData = await redisCli.hGet(`user:${user.id}`.toString(), 'email');
+    if (sessionData) {
       throw new UnauthorizedException('이미 다른 기기에서 로그인되었습니다.');
     }
     req.session.email = user.email;
-    await redisClient.hset(`user:${user.id}`, user.email);
+    redisCli.hSet(`user:${user.id}`.toString(), { email: user.email });
   }
 
   async joinUser(req: Request, createUserDto: CreateUserDto): Promise<void> {

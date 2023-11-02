@@ -8,7 +8,7 @@ import { User } from 'src/users/user.entity';
 import { UserByIdPipe } from 'src/pipes/UserById.pipe';
 
 @UseGuards(AuthGuard)
-@Controller('users-relation')
+@Controller('user-relation')
 export class UserRelationController {
   constructor(private userRelationService: UserRelationService) {}
 

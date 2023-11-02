@@ -15,6 +15,7 @@ async function bootstrap() {
     origin: ['http://localhost:3000', 'https://develop.d35lpok7005dz1.amplifyapp.com'], // 요청을 보내는 클라이언트의 주소를 명시
     credentials: true,
   });
+
   // DB튜플 추가
   const testService = app.get(TestService);
   await testService.addUser();
