@@ -28,7 +28,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Post('logout')
-  logout(@Req() req: Request, @Res() res: Response, @GetUser() user: User) {
+  async logout(@Req() req: Request, @Res() res: Response, @GetUser() user: User): Promise<void> {
     req.session.destroy((err) => {
       if (err) {
         throw new InternalServerErrorException();
@@ -36,8 +36,12 @@ export class AuthController {
       res.clearCookie('access_token');
     });
     const sessionKey = `user:${user.id}`;
-    redisCli.hdel(sessionKey);
-    res.send('로그아웃 성공');
+    if (await redisCli.exists(sessionKey)) {
+      await redisCli.hDel(sessionKey, ['email']);
+      res.send('로그아웃 성공');
+    } else {
+      res.send('로그아웃 실패');
+    }
   }
 
   @Get('sign-in')
@@ -71,7 +75,7 @@ export class AuthController {
     if (accessToken) {
       const userEmail = await this.authService.getEmail(accessToken);
       createUserDto.email = userEmail;
-      const newUser = await this.authService.joinUser(req, createUserDto);
+      const newUser = await this.authService.joinUser(createUserDto);
       this.authService.loginUser(req, newUser);
       res.send({ redirect: 'home' });
     } else {

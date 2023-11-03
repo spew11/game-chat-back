@@ -62,10 +62,10 @@ export class AuthService {
       throw new UnauthorizedException('이미 다른 기기에서 로그인되었습니다.');
     }
     req.session.email = user.email;
-    redisCli.hSet(`user:${user.id}`.toString(), { email: user.email });
+    await redisCli.hSet(`user:${user.id}`.toString(), { email: user.email });
   }
 
-  async joinUser(req: Request, createUserDto: CreateUserDto): Promise<User> {
+  async joinUser(createUserDto: CreateUserDto): Promise<User> {
     const existUser = await this.usersService.findByEmail(createUserDto.email);
     if (existUser) {
       throw new ConflictException('이미 가입된 유저입니다.');
