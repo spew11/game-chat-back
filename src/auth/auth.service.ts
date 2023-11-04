@@ -34,13 +34,13 @@ export class AuthService {
     return authorizationUrl;
   }
 
-  async getAccessToken(state: string, code: string): Promise<string> {
+  async getAccessToken(state: string, code: string, callbackUri: string): Promise<string> {
     const data = {
       grant_type: 'authorization_code',
       client_id: this.configService.get<string>('CLIENT_ID'),
       client_secret: this.configService.get<string>('CLIENT_SECRET'),
       code: code,
-      redirect_uri: this.configService.get<string>('CALLBACK_URI'),
+      redirect_uri: callbackUri,
       state: state,
     };
     const response = await axios.post(this.TOKEN_URL, data);

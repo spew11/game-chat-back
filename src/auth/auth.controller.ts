@@ -56,8 +56,9 @@ export class AuthController {
     @Res() res: Response,
     @Query('code') code: string,
     @Query('state') state: string,
+    @Query('callback_uri') callbackUri: string,
   ): Promise<void> {
-    const accessToken = await this.authService.getAccessToken(state, code);
+    const accessToken = await this.authService.getAccessToken(state, code, callbackUri);
     const userEmail = await this.authService.getEmail(accessToken);
     const user = await this.usersService.findByEmail(userEmail);
     if (user) {
