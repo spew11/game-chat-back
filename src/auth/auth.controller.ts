@@ -15,8 +15,6 @@ import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UsersService } from 'src/users/users.service';
-import { GetUser } from './user.decorator';
-import { User } from 'src/users/user.entity';
 import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
@@ -26,18 +24,20 @@ export class AuthController {
     private usersService: UsersService,
   ) {}
 
+  // async logout(@Req() req: Request, @Res() res: Response, @GetUser() user: User): Promise<void> {
   @UseGuards(AuthGuard)
   @Post('logout')
-  async logout(@Req() req: Request, @Res() res: Response, @GetUser() user: User): Promise<void> {
+  async logout(@Req() req: Request, @Res() res: Response): Promise<void> {
     req.session.destroy((err) => {
       if (err) {
         throw new InternalServerErrorException();
       }
       res.clearCookie('access_token');
     });
+    res.send('로그아웃 완료');
     // const sessionKey = `user:${user.id}`;
-    // if (await redisCli.exists(sessionKey)) {
-    //   await redisCli.hDel(sessionKey, ['email']);
+    // if (await redisClient.exists(sessionKey)) {
+    //   await redisClient.hdel(sessionKey, 'email');
     //   res.send('로그아웃 성공');
     // } else {
     //   res.send('로그아웃 실패');
@@ -82,13 +82,14 @@ export class AuthController {
     } else {
       throw new UnauthorizedException('42로그인이 필요합니다.');
     }
-    res.send('가입성공');
+    res.send('가입 성공');
   }
 
+  // session 저장, 토큰 반환 테스트를 위한 임시 핸들러
   @Get('login/:email')
   async loginTest(@Req() req: Request, @Res() res: Response, @Param('email') email: string) {
     const user = await this.usersService.findByEmail(email);
-    console.log(email);
+    console.log(`exist email: ${email}`);
     this.authService.loginUser(req, user);
     res.send(`${email} 로그인 성공`);
   }

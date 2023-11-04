@@ -3,7 +3,7 @@ import session from 'express-session';
 import RedisStore from 'connect-redis';
 import { Redis } from 'ioredis';
 
-const redisClient = new Redis({
+export const redisClient = new Redis({
   host: 'redis',
   port: 6379,
 });
@@ -24,8 +24,8 @@ declare module 'express-session' {
 export function sessionMiddleware(configService: ConfigService) {
   return session({
     secret: configService.get<string>('SESSION_SECRET'),
-    resave: false, // 세션 갱신
-    saveUninitialized: false, // 로그인한 사용자에게만 세션 ID할당하기
+    resave: false, // resave: 사용자의 api호출시 마다 session기한을 연장하는 설정.
+    saveUninitialized: false, // saveUninitialized 로그인한 사용자에게만 세션ID을 할당하는 설정.
     cookie: {
       path: '/',
       maxAge: 30 * 60 * 1000,
@@ -33,7 +33,7 @@ export function sessionMiddleware(configService: ConfigService) {
       sameSite: 'none',
       secure: false,
     },
-    store: new RedisStore({ client: redisClient, prefix: 'session:' }),
-    // name: 'session-cookie',
+    store: new RedisStore({ client: redisClient, prefix: 'session:' }), // prefix: session key에 접두사를 붙여서 구별하기 용이하게 하는 역할
+    name: 'session-cookie', // name: 세션 쿠키 이름 (ex. Set-Cookie: session-cookie=encoded sessionID)
   });
 }
