@@ -6,6 +6,7 @@ import {
   Req,
   Post,
   Body,
+  Param,
   UnauthorizedException,
   InternalServerErrorException,
   UseGuards,
@@ -16,7 +17,6 @@ import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UsersService } from 'src/users/users.service';
 import { GetUser } from './user.decorator';
 import { User } from 'src/users/user.entity';
-import { redisCli } from '@configs/session.config';
 import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
@@ -35,13 +35,13 @@ export class AuthController {
       }
       res.clearCookie('access_token');
     });
-    const sessionKey = `user:${user.id}`;
-    if (await redisCli.exists(sessionKey)) {
-      await redisCli.hDel(sessionKey, ['email']);
-      res.send('로그아웃 성공');
-    } else {
-      res.send('로그아웃 실패');
-    }
+    // const sessionKey = `user:${user.id}`;
+    // if (await redisCli.exists(sessionKey)) {
+    //   await redisCli.hDel(sessionKey, ['email']);
+    //   res.send('로그아웃 성공');
+    // } else {
+    //   res.send('로그아웃 실패');
+    // }
   }
 
   @Get('sign-in')
@@ -82,5 +82,14 @@ export class AuthController {
     } else {
       throw new UnauthorizedException('42로그인이 필요합니다.');
     }
+    res.send('가입성공');
+  }
+
+  @Get('login/:email')
+  async loginTest(@Req() req: Request, @Res() res: Response, @Param('email') email: string) {
+    const user = await this.usersService.findByEmail(email);
+    console.log(email);
+    this.authService.loginUser(req, user);
+    res.send(`${email} 로그인 성공`);
   }
 }

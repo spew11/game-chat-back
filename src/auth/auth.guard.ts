@@ -8,8 +8,9 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-
-    if (request.session && request.session.email) {
+    console.log('here');
+    if (request?.session.email) {
+      console.log(`어쓰가드: ${request.session.email}`);
       const user: User = await this.usersService.findByEmail(request.session.email);
       if (!user) {
         throw new UnauthorizedException('유효하지 않은 사용자입니다.');
