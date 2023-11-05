@@ -8,7 +8,7 @@ import { User } from 'src/users/user.entity';
 import { UserByIdPipe } from 'src/pipes/UserById.pipe';
 
 @UseGuards(AuthGuard)
-@Controller('users-relation')
+@Controller('user-relation')
 export class UserRelationController {
   constructor(private userRelationService: UserRelationService) {}
 
@@ -25,35 +25,33 @@ export class UserRelationController {
   }
 
   @Post('friends/:user_id/request')
-  async requestFriend(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): Promise<void> {
-    await this.userRelationService.createFriendRequest(user, otherUser);
+  requestFriend(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): void {
+    this.userRelationService.createFriendRequest(user, otherUser);
   }
 
   @Delete('friends/:user_id/disconnect')
-  async deleteFriend(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): Promise<void> {
-    this.userRelationService.removeUserRelation(user.id, otherUser.id);
-    this.userRelationService.removeUserRelation(otherUser.id, user.id);
+  deleteFriend(@GetUser() user: User, @Param('user_id') otherUserId: number): void {
+    this.userRelationService.deleteFriendship(user.id, otherUserId);
   }
 
   @Put('friends/:user_id/accept')
-  async acceptFriend(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): Promise<void> {
-    await this.userRelationService.establishFriendship(user.id, otherUser.id);
+  acceptFriend(@GetUser() user: User, @Param('user_id') otherUserId: number): void {
+    this.userRelationService.establishFriendship(user.id, otherUserId);
   }
 
   @Delete('friends/:user_id/reject')
-  async rejectUser(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): Promise<void> {
-    this.userRelationService.removeUserRelation(user.id, otherUser.id);
-    this.userRelationService.removeUserRelation(otherUser.id, user.id);
+  rejectUser(@GetUser() user: User, @Param('user_id') otherUserId: number): void {
+    this.userRelationService.rejectFriendship(user.id, otherUserId);
   }
 
   @Post('block/:user_id')
-  async blockUser(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): Promise<void> {
-    await this.userRelationService.createBlockRelation(user, otherUser);
+  blockUser(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): void {
+    this.userRelationService.createBlockRelation(user, otherUser);
   }
 
   @Delete('block/:user_id')
-  async unblockUser(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): Promise<void> {
-    this.userRelationService.removeUserRelation(user.id, otherUser.id);
+  unblockUser(@GetUser() user: User, @Param('user_id') otherUserId: number): void {
+    this.userRelationService.unblockUserRelation(user.id, otherUserId);
   }
 
   @Get('block')
