@@ -31,7 +31,7 @@ export function sessionMiddleware(configService: ConfigService) {
       maxAge: 30 * 60 * 1000,
       httpOnly: false,
       sameSite: 'none',
-      secure: false,
+      secure: true,
     },
     store: new RedisStore({ client: redisClient, prefix: 'session:' }), // prefix: session key에 접두사를 붙여서 구별하기 용이하게 하는 역할
     name: 'session-cookie', // name: 세션 쿠키 이름 (ex. Set-Cookie: session-cookie=encoded sessionID)
