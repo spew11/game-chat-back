@@ -10,6 +10,7 @@ services:
       - app-network
     volumes:
       - ./src:/app/src
+      - ./secrets:${SSL_PATH}
     ports:
       - 3000:3000
     command: npm run start:dev
