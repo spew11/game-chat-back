@@ -9,8 +9,8 @@ export class AuthController {
   constructor(
     private authService: AuthService,
     private usersService: UsersService,
-    ) {}
-    
+  ) {}
+
   @Get('sign-in')
   signIn(@Res() res: Response, @Query('callback_uri') callbackUri: string) {
     const state = this.authService.generateRandomString(16);
