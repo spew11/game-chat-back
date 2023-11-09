@@ -1,4 +1,5 @@
 import { GetUser } from 'src/auth/user.decorator';
+import { User } from './../users/user.entity';
 
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { Channel, ChannelType } from './entities/channel.entity';
