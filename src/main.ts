@@ -5,9 +5,15 @@ import cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
 import { sessionMiddleware } from '@configs/session.config';
 import { ValidationPipe } from '@nestjs/common';
+import { readFileSync } from 'fs';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const httpsOptions = {
+    key: readFileSync(process.env.SSL_PATH + '/key.pem'),
+    cert: readFileSync(process.env.SSL_PATH + '/cert.pem'),
+  };
+
+  const app = await NestFactory.create(AppModule, { httpsOptions });
   const configService = app.get(ConfigService);
 
   app.useGlobalPipes(new ValidationPipe());
