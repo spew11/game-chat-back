@@ -19,7 +19,7 @@ export class ChannelsService {
     @InjectRepository(ChannelRelation)
     private channelRelationRepository: Repository<ChannelRelation>,
     private readonly entityManager: EntityManager,
-  ) {}
+  ) { }
 
   async createChannel(owner: User, channelDto: ChannelDto) {
     // transaction 추가
@@ -50,6 +50,10 @@ export class ChannelsService {
 
     if (channelDto.password) {
       channelDto.password = await this.hashPassword(channelDto.password);
+    }
+
+    if (channelDto.title) {
+      channel.title = channelDto.title;
     }
 
     Object.assign(channel, channelDto);
