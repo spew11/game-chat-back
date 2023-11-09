@@ -18,13 +18,6 @@ export class TypeORMConfigProvider {
       entities: [__dirname + '/../**/*.entity.{js, ts}'],
       synchronize: this.configService.get<boolean>('POSTGRES_SYNCHRONIZE'),
       dropSchema: this.configService.get<boolean>('POSTGRES_DROP_SCHEMA'),
-      // type: 'sqlite',
-      // database: 'transendence.sqlite',
-      // autoLoadEntities: true,
-      // synchronize: true,
-      // logging: true,
-      // dropSchema: true,
     };
   }
-
 }
