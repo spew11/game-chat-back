@@ -30,7 +30,7 @@ export class Channel {
   type: ChannelType;
 
   @ManyToOne(() => User, (user) => user.channels)
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'userId' })
   user: User;
 
   @OneToMany(() => ChannelRelation, (channelRelation) => channelRelation.channel, {
