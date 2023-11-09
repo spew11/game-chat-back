@@ -40,12 +40,6 @@ export class ChannelsController {
     return this.channelService.exitChannel(user, channelId);
   }
 
-  @Get(':channel_id')
-  getOneChannel(@Param('channel_id', ParseIntPipe) channelId: number) {
-    const channel = this.channelService.findChannelWithMembers(channelId);
-    return channel;
-  }
-
   @Get(':channel_id/ban')
   // adminguard
   getAllChannelBannedUsers(@Param('channel_id', ParseIntPipe) channelId: number) {
@@ -54,8 +48,8 @@ export class ChannelsController {
 
   @Post(':channel_id/ban/:user_id')
   // adminguard
-  banUser(@Param('channel_id', ChannelByIdPipe) channel: Channel, @Param('user_id', UserByIdPipe) user: User) {
-    return this.channelService.banUser(channel, user);
+  banUser(@Param('channel_id', ChannelByIdPipe) channel: Channel, @Param('user_id', UserByIdPipe) userId: number) {
+    return this.channelService.banUser(channel, userId);
   }
 
   @Delete(':channel_id/ban/:user_id')
@@ -82,7 +76,7 @@ export class ChannelsController {
   @Put(':channel_id/admin/:user_id/deprive')
   // ownerguard
   depriveAdmin(@Param('channel_id', ParseIntPipe) channelId: number, @Param('user_id', ParseIntPipe) userId: number) {
-    return this.channelService.updateChannelRelation(channelId, userId, { isAdmin: true });
+    return this.channelService.updateChannelRelation(channelId, userId, { isAdmin: false });
   }
 
   @Put(':channel_id/owner/:user_id')
