@@ -17,9 +17,12 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
+<<<<<<< Updated upstream
     "esModuleInterop": true,
     "paths": {
       "@configs/*": ["src/configs/*"]
     },
+=======
+>>>>>>> Stashed changes
   }
 }
