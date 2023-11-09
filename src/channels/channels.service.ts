@@ -1,4 +1,4 @@
-import { User } from './../users/user.entity';
+import { GetUser } from 'src/auth/user.decorator';
 
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { Channel, ChannelType } from './entities/channel.entity';
@@ -7,9 +7,6 @@ import { Repository, EntityManager } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChannelDto } from './dto/channel.dto';
 import * as bcrypt from 'bcrypt';
-
-import { UpdateChannelRelationDto } from './dto/update-channel-relation.dto';
-import { GetUser } from '../auth/user.decorator';
 
 @Injectable()
 export class ChannelsService {
