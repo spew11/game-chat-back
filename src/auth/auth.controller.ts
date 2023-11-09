@@ -28,13 +28,22 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @Post('logout')
   async logout(@Req() req: Request, @Res() res: Response): Promise<void> {
-    req.session.destroy((err) => {
-      if (err) {
-        throw new InternalServerErrorException();
-      }
-      res.clearCookie('access_token');
-    });
-    res.send('로그아웃 완료');
+    try {
+      await new Promise((resolve, reject) => {
+        req.session.destroy((err) => {
+          if (err) {
+            reject(new InternalServerErrorException('session id detroy error'));
+          } else {
+            res.clearCookie('session-cookie');
+            res.send('로그아웃 성공');
+            resolve(undefined);
+          }
+        });
+      });
+    } catch (err) {
+      console.log(`LOGOUT ERR: ${err}`);
+      throw err;
+    }
     // const sessionKey = `user:${user.id}`;
     // if (await redisClient.exists(sessionKey)) {
     //   await redisClient.hdel(sessionKey, 'email');
