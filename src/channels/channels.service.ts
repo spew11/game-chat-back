@@ -174,7 +174,7 @@ export class ChannelsService {
     }
 
     const channelRelation = await this.channelRelationRepository.findOne({
-      where: { channel, user: userId },
+      where: { channel, user: { id: userId } },
     });
 
     if (!channelRelation) {
@@ -215,7 +215,7 @@ export class ChannelsService {
     }
 
     const channelRelation = await this.channelRelationRepository.findOne({
-      where: { channel, user: userId, isBanned: true },
+      where: { channel, user: { id: userId }, isBanned: true },
     });
 
     if (!channelRelation) {
@@ -240,7 +240,7 @@ export class ChannelsService {
 
     // request하는 유저가 채널의 멤버인지 체크
     const requestingUserRelation = await this.channelRelationRepository.findOne({
-      where: { channel, user: requestingUser.id },
+      where: { channel, user: { id: requestingUser.id } },
     });
 
     if (!requestingUserRelation) {
@@ -252,7 +252,7 @@ export class ChannelsService {
     }
 
     const kickedUserRelation = await this.channelRelationRepository.findOne({
-      where: { channel, user: kickedUserId },
+      where: { channel, user: { id: kickedUserId} },
     });
 
     // kick되려는 유저가 채널 멤버가 맞는지 체크
@@ -281,7 +281,7 @@ export class ChannelsService {
     }
 
     const requestingUserRelation = await this.channelRelationRepository.findOne({
-      where: { channel, user: userId },
+      where: { channel, user: { id: userId } },
     });
 
     if (!requestingUserRelation) {
@@ -313,7 +313,7 @@ export class ChannelsService {
     }
 
     const successor = await this.channelRelationRepository.findOne({
-      where: { channel, user: successorId },
+      where: { channel, user: { id: successorId } },
     });
 
     if (!successor) {
@@ -336,7 +336,7 @@ export class ChannelsService {
     }
 
     const requestingUserRelation = await this.channelRelationRepository.findOne({
-      where: { channel, user: requestingUser.id },
+      where: { channel, user: { id: requestingUser.id} },
     });
 
     if (!requestingUserRelation) {
@@ -345,7 +345,7 @@ export class ChannelsService {
 
     const invitedUserRelation = this.channelRelationRepository.create({
       channel,
-      user: invitedUser.id,
+      user: invitedUser,
     });
 
     await this.channelRelationRepository.save(invitedUserRelation);
