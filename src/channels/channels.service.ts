@@ -158,16 +158,7 @@ export class ChannelsService {
   }
 
 
-  async banUser(channelId: number, userId: number): Promise<boolean> {
-
-    const channel = await this.channelRepository.findOne({
-      where: { id: channelId },
-      relations: ['user'],
-    });
-
-    if (!channel) {
-      throw new NotFoundException('채널을 찾을 수 없습니다!');
-    }
+  async banUser(channel: Channel, userId: number): Promise<boolean> {
 
     const requestingUserRelation = await this.channelRelationRepository.findOne({
       where: { channel, user: channel.user },
@@ -274,7 +265,6 @@ export class ChannelsService {
 
     return true;
   }
-
 
   async updateChannelRelation(channelId: number, userId: number, updateData: { isAdmin: boolean }): Promise<boolean> {
     const channel = await this.channelRepository.findOne({
@@ -416,6 +406,3 @@ export class ChannelsService {
   }
 
 }
-
-
-

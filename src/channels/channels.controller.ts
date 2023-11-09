@@ -69,8 +69,8 @@ export class ChannelsController {
 
   @Delete(':channel_id/kick/:user_id')
   // adminguard
-  kickUser(@Param('channel_id', ParseIntPipe) channelId: number, @Param('user_id', ParseIntPipe) userId: number) {
-    return this.channelService.kickUser(channelId, userId);
+  kickUser(@GetUser() requestingUser: User, @Param('channel_id', ParseIntPipe) channelId: number, @Param('user_id', ParseIntPipe) userId: number) {
+    return this.channelService.kickUser(channelId, userId, requestingUser);
   }
 
   @Put(':channel_id/admin/:user_id/give')
