@@ -28,9 +28,9 @@ export class UsersController {
     return userDtos;
   }
 
-  @Get(':user_id')
-  getUserDetails(@Param('user_id', UserByIdPipe) user: User): ShowUserDetailsDto {
-    const userDto = new ShowUserDetailsDto();
+  @Get('me')
+  getUserInfomation(@GetUser() user: User): ShowUserInforamtionDto {
+    const userDto = new ShowUserInforamtionDto();
     userDto.avatar = user.avatar;
     userDto.bio = user.bio;
     userDto.email = user.email;
@@ -39,9 +39,9 @@ export class UsersController {
     return userDto;
   }
 
-  @Get('me')
-  getUserInfomation(@GetUser() user: User): ShowUserInforamtionDto {
-    const userDto = new ShowUserInforamtionDto();
+  @Get(':user_id')
+  getUserDetails(@Param('user_id', UserByIdPipe) user: User): ShowUserDetailsDto {
+    const userDto = new ShowUserDetailsDto();
     userDto.avatar = user.avatar;
     userDto.bio = user.bio;
     userDto.email = user.email;
