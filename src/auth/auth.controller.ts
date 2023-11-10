@@ -33,11 +33,10 @@ export class AuthController {
         req.session.destroy((err) => {
           if (err) {
             reject(new InternalServerErrorException('session id detroy error'));
-          } else {
-            res.clearCookie('session-cookie');
-            res.send('로그아웃 성공');
-            resolve(undefined);
           }
+          res.clearCookie('session-cookie');
+          res.send('로그아웃 성공');
+          resolve(undefined);
         });
       });
     } catch (err) {
