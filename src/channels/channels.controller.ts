@@ -1,12 +1,14 @@
 import { ChannelByIdPipe } from './../pipes/ChannelById.Pipe';
-import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, UseGuards } from '@nestjs/common';
 import { ChannelsService } from './channels.service';
 import { GetUser } from 'src/auth/user.decorator';
 import { User } from 'src/users/user.entity';
 import { ChannelDto } from './dto/channel.dto';
 import { Channel } from './entities/channel.entity';
 import { UserByIdPipe } from 'src/pipes/UserById.pipe';
+import { AuthGuard } from 'src/auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('channels')
 export class ChannelsController {
   constructor(private readonly channelService: ChannelsService) {}
@@ -63,8 +65,8 @@ export class ChannelsController {
 
   @Delete(':channel_id/kick/:user_id')
   // adminguard
-  kickUser(@GetUser() requestingUser: User, @Param('channel_id', ParseIntPipe) channelId: number, @Param('user_id', ParseIntPipe) userId: number) {
-    return this.channelService.kickUser(channelId, userId, requestingUser);
+  kickUser(@Param('channel_id', ParseIntPipe) channelId: number, @Param('user_id', ParseIntPipe) userId: number) {
+    return this.channelService.kickUser(channelId, userId);
   }
 
   @Put(':channel_id/admin/:user_id/give')
@@ -86,13 +88,11 @@ export class ChannelsController {
   }
 
   @Post(':channel_id/invite/:user_id') // 뒤에 user_id 필요
-// adminguard
   inviteUser(
-    @GetUser() requestingUser: User,
     @Param('channel_id', ChannelByIdPipe) channel: Channel,
     @Param('user_id', UserByIdPipe) invitedUser: User,
     ) {
-    return this.channelService.inviteUser(channel, invitedUser, requestingUser);
+    return this.channelService.inviteUser(channel, invitedUser);
   }
 
   @Post(':channel_id')

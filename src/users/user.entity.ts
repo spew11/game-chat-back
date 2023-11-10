@@ -1,6 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { ChannelRelation } from 'src/channels/entities/channel-relation.entity';
 import { Channel } from 'src/channels/entities/channel.entity';
+import { ChannelInvitation } from '../channels/entities/channel-invitation.entity';
 
 @Entity()
 export class User {
@@ -30,4 +31,7 @@ export class User {
 
   @OneToMany(() => ChannelRelation, (channelRelation) => channelRelation.user)
   channelRelations: ChannelRelation[];
+
+  @OneToMany(() => ChannelInvitation, (channelInvitation) => channelInvitation.user)
+  channelInvitations: ChannelInvitation[];
 }

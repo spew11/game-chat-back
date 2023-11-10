@@ -3,6 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColum
 
 import { ChannelRelation } from './channel-relation.entity';
 import { MinLength } from 'class-validator';
+import { ChannelInvitation } from './channel-invitation.entity';
 
 export enum ChannelType {
   private,
@@ -37,4 +38,9 @@ export class Channel {
     cascade: true,
   })
   channelRelations: ChannelRelation[];
+
+  @OneToMany(() => ChannelInvitation, (channelInvitation) => channelInvitation.channel, {
+    cascade: true,
+  })
+  channelInvitations: ChannelInvitation[];
 }

@@ -8,6 +8,7 @@ import { Repository, EntityManager } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChannelDto } from './dto/channel.dto';
 import * as bcrypt from 'bcrypt';
+import { ChannelInvitation } from './entities/channel-invitation.entity';
 
 @Injectable()
 export class ChannelsService {
@@ -16,7 +17,8 @@ export class ChannelsService {
     private channelRepository: Repository<Channel>,
     @InjectRepository(ChannelRelation)
     private channelRelationRepository: Repository<ChannelRelation>,
-    private readonly entityManager: EntityManager,
+    @InjectRepository(ChannelInvitation)
+    private channelInvitationRepository: Repository<ChannelInvitation>,
   ) { }
 
   async createChannel(owner: User, channelDto: ChannelDto) {
@@ -102,28 +104,32 @@ export class ChannelsService {
 
     await this.channelRelationRepository.remove(channelRelation);
 
+    const remainingUsers = await this.channelRelationRepository.find({
+      where: { channel: { id: channelId } },
+    });
+
+    if (remainingUsers.length === 0) {
+      // 마지막 사람이 나갈 때 남은 유저가 없다면 채널 삭제
+      await this.channelRepository.delete(channelId);
+    }
+
     return true;
   }
 
   private async transferOwnership(channelId: number): Promise<void> {
-    const earliestOwnerRelation = await this.entityManager
-      .getRepository(ChannelRelation)
-      .find({
-        where: { channelId } as any,
+    const earliestOwnerRelation = await this.channelRelationRepository.find({
+        where: { channel: { id: channelId } },
         order: { createdAt: 'ASC' },
         take: 1,
-      });
+    });
 
-    if (earliestOwnerRelation.length > 0) {
-      await this.entityManager
-        .createQueryBuilder()
-        .update(ChannelRelation)
-        .set({ isOwner: true })
-        .where('id = :id', { id: earliestOwnerRelation[0].id })
-        .execute();
-    } else {
-      throw new NotFoundException('소유자를 위임할 유저가 없습니다!');
-    }
+      if (earliestOwnerRelation.length > 0) {
+        const earliestOwner = earliestOwnerRelation[0];
+        earliestOwner.isOwner = true;
+        await this.channelRelationRepository.save(earliestOwner);
+      } else {
+        throw new NotFoundException('소유자를 위임할 유저가 없습니다!');
+      }
   }
 
   async findChannelWithMembers(channelId: number) {
@@ -149,28 +155,19 @@ export class ChannelsService {
       throw new NotFoundException('채널을 찾을 수 없습니다!');
     }
 
-    // filter랑 map을 이용해 banned 유저 찾기
-    // filter로 isBanned 값이 true인 것만 포함
-    // map으로 relation의 필터된 배열을 ManytoOne의 user의 배열로 변환
-    const bannedUsers = channel.channelRelations
-      .filter((relation) => relation.isBanned)
-      .map((relation) => relation.user);
-
-    return bannedUsers;
-  }
-
-
-  async banUser(channel: Channel, userId: number): Promise<boolean> {
-
-    const requestingUserRelation = await this.channelRelationRepository.findOne({
-      where: { channel, user: channel.user },
+    const bannedUsers = await this.channelRelationRepository.find({
+      where: {
+        channel: { id: channelId },
+        isBanned: true,
+      },
+      relations: ['user'],
     });
 
+    return bannedUsers.map((relation) => relation.user);
+    // ChannelRelation entity를 User entity 형태로 리턴하기 위해 map 메소드 사용
+  }
 
-    if (!requestingUserRelation || (!requestingUserRelation.isOwner && !requestingUserRelation.isAdmin)) {
-      throw new ForbiddenException('관리자 권한이 없습니다!');
-    }
-
+  async banUser(channel: Channel, userId: number): Promise<boolean> {
     const channelRelation = await this.channelRelationRepository.findOne({
       where: { channel, user: { id: userId } },
     });
@@ -204,14 +201,6 @@ export class ChannelsService {
       throw new NotFoundException('채널을 찾을 수 없습니다!');
     }
 
-    const requestingUserRelation = await this.channelRelationRepository.findOne({
-      where: { channel, user: channel.user },
-    });
-
-    if (!requestingUserRelation || (!requestingUserRelation.isOwner && !requestingUserRelation.isAdmin)) {
-      throw new UnauthorizedException('관리자 권한이 없습니다!');
-    }
-
     const channelRelation = await this.channelRelationRepository.findOne({
       where: { channel, user: { id: userId }, isBanned: true },
     });
@@ -226,7 +215,7 @@ export class ChannelsService {
     return true;
   }
 
-  async kickUser(channelId: number, kickedUserId: number, @GetUser() requestingUser: User): Promise<boolean> {
+  async kickUser(channelId: number, kickedUserId: number): Promise<boolean> {
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
       relations: ['user'],
@@ -234,19 +223,6 @@ export class ChannelsService {
 
     if (!channel) {
       throw new NotFoundException('채널을 찾을 수 없습니다!');
-    }
-
-    // request하는 유저가 채널의 멤버인지 체크
-    const requestingUserRelation = await this.channelRelationRepository.findOne({
-      where: { channel, user: { id: requestingUser.id } },
-    });
-
-    if (!requestingUserRelation) {
-      throw new ForbiddenException('해당 채널의 멤버가 아닙니다!');
-    }
-
-    if (!requestingUserRelation.isOwner && !requestingUserRelation.isAdmin) {
-      throw new ForbiddenException('관리자 권한이 없습니다!');
     }
 
     const kickedUserRelation = await this.channelRelationRepository.findOne({
@@ -278,20 +254,16 @@ export class ChannelsService {
       throw new NotFoundException('채널을 찾을 수 없습니다!');
     }
 
-    const requestingUserRelation = await this.channelRelationRepository.findOne({
+    const requestedUserRelation = await this.channelRelationRepository.findOne({
       where: { channel, user: { id: userId } },
     });
 
-    if (!requestingUserRelation) {
-      throw new NotFoundException('해당 채널의 멤버가 아닙니다!');
+    if (requestedUserRelation.isOwner) {
+      throw new ForbiddenException('채널 소유자의 권한을 변경할 수 없습니다!');
     }
 
-    if (!requestingUserRelation.isOwner) {
-      throw new ForbiddenException('채널의 소유자가 아닙니다!');
-    }
-
-    requestingUserRelation.isAdmin = updateData.isAdmin;
-    await this.channelRelationRepository.save(requestingUserRelation);
+    requestedUserRelation.isAdmin = updateData.isAdmin;
+    await this.channelRelationRepository.save(requestedUserRelation);
 
     return true;
   }
@@ -328,27 +300,27 @@ export class ChannelsService {
   }
 
 
-  async inviteUser(channel: Channel, invitedUser: User, @GetUser() requestingUser: User): Promise<boolean> {
-    if (!channel || !invitedUser || !requestingUser) {
-      throw new NotFoundException('유저를 찾을 수 없습니다!');
-    }
-
-    const requestingUserRelation = await this.channelRelationRepository.findOne({
-      where: { channel, user: { id: requestingUser.id} },
+  async inviteUser(
+    channel: Channel,
+    invitedUser: User,
+  ): Promise<ChannelInvitation> {
+    // 초대된 유저가 이미 초대된 건지 체크
+    const existingInvitation = await this.channelInvitationRepository.findOne({
+      where: { channel, user: invitedUser },
     });
 
-    if (!requestingUserRelation) {
-      throw new NotFoundException('해당 채널의 멤버가 아닙니다!');
+    if (existingInvitation) {
+      // 이미 초대됐다면 예외 발생
+      throw new NotFoundException('유저가 채널에 이미 초대되었습니다!');
     }
 
-    const invitedUserRelation = this.channelRelationRepository.create({
+    //초대된 채널 유저 데이터 저장
+    const invitation = this.channelInvitationRepository.create({
       channel,
       user: invitedUser,
     });
 
-    await this.channelRelationRepository.save(invitedUserRelation);
-
-    return true;
+    return this.channelInvitationRepository.save(invitation);
   }
 
 
