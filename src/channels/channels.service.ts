@@ -30,7 +30,7 @@ export class ChannelsService {
     const { title, password, type } = channelDto;
 
     let hashedPassword = null;
-    if (password) {
+    if (type === ChannelType.protected && password) {
       const salt = await bcrypt.genSalt();
       hashedPassword = await bcrypt.hash(password, salt);
     }

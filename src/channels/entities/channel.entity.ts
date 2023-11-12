@@ -5,9 +5,9 @@ import { MinLength } from 'class-validator';
 import { ChannelInvitation } from './channel-invitation.entity';
 
 export enum ChannelType {
-  private,
-  protected,
-  public,
+  private = 'private',
+  protected = 'protected',
+  public = 'public',
 }
 
 @Entity()
