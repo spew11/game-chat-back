@@ -85,8 +85,8 @@ export class UserRelationService {
   // user-otherUser(status=friend_request)객체 1개, otherUser-user(status=pending_approval) 객체 1개, 총 2개의 객체 생성
   async createFriendRequest(requester: User, recipient: User): Promise<void> {
     // 내가 상대방과 아무 사이아닐 때 가능함. 상대방이 나를 차단했어도 요청은 할 수 있음(상대입장은 여전히 차단함)
-    const requesterSide = this.findUserRelation(requester.id, recipient.id);
-    const recipientSide = this.findUserRelation(recipient.id, requester.id);
+    const requesterSide = await this.findUserRelation(requester.id, recipient.id);
+    const recipientSide = await this.findUserRelation(recipient.id, requester.id);
     if (!requesterSide) {
       // user-otherUser 인스턴스 생성
       const requesterDto = new CreateUserRelationDto();
@@ -110,9 +110,8 @@ export class UserRelationService {
   // user가 otherUser 차단(친구관계여도 무조건 차단함)
   async createBlockRelation(user: User, otherUser: User): Promise<void> {
     const userSide = await this.findUserRelation(user.id, otherUser.id);
-
     // 이미 userSide 관계가 존재한다면 status=block으로 변경
-    if (userSide?.status != UserRelationStatusEnum.BLOCKED) {
+    if (userSide && userSide.status != UserRelationStatusEnum.BLOCKED) {
       userSide.status = UserRelationStatusEnum.BLOCKED;
       this.userRelationRepository.save(userSide);
     } else {
