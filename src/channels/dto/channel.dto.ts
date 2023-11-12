@@ -1,4 +1,4 @@
-import { IsEnum, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsEnum, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
 import { ChannelType } from '../entities/channel.entity';
 import { Optional } from '@nestjs/common';
 
@@ -9,6 +9,7 @@ export class ChannelDto {
 
   @IsString()
   @Optional()
+  @ValidateIf((o) => o.type === ChannelType.protected)
   @MinLength(4)
   password: string;
 

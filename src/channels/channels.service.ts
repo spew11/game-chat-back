@@ -35,7 +35,9 @@ export class ChannelsService {
       hashedPassword = await bcrypt.hash(password, salt);
     }
 
-    const channel = this.channelRepository.create({ title, password: hashedPassword, type });
+    let channel = this.channelRepository.create({ title, password: hashedPassword, type });
+
+    channel = await this.channelRepository.save(channel);
 
     const channelRelation = this.channelRelationRepository.create({
       channel,
@@ -44,7 +46,6 @@ export class ChannelsService {
       isAdmin: true,
     });
 
-    await this.channelRepository.save(channel);
     await this.channelRelationRepository.save(channelRelation);
 
     return channel;
@@ -111,7 +112,7 @@ export class ChannelsService {
         // 마지막 사람이 나갈 때 남은 유저가 없다면 채널 삭제
         this.transferOwnership(earliestOwnerRelation);
       } else {
-        this.channelRepository.remove(channelId);
+        this.channelRepository.delete(channelId);
       }
     }
   }
@@ -225,8 +226,8 @@ export class ChannelsService {
 
   async changeOwner(channelId: number, currentOwnerId: number, successorId: number) {
     // 현 소유자 찾기
-    const currentOwnerRelation = this.channelRepository.findOneBy({
-      channelId,
+    const currentOwnerRelation = await this.channelRelationRepository.findOneBy({
+      channel: {id: channelId},
       user: {id: currentOwnerId},
       isOwner: true,
     })
@@ -236,8 +237,8 @@ export class ChannelsService {
     }
 
     // 소유자를 계승할 유저 찾기
-    const successorRelation = this.channelRepository.findOneBy({
-      channelId,
+    const successorRelation = await this.channelRelationRepository.findOneBy({
+      channel: {id: channelId},
       user: {id: successorId},
       isBanned: false,
     })
@@ -290,7 +291,7 @@ export class ChannelsService {
     }
 
     if (channel.type === ChannelType.private) {
-      const channalinvitation = this.channelInvitationRepository.findOnyBy({
+      const channalinvitation = this.channelInvitationRepository.findOneBy({
         channel,
         user,
       })
