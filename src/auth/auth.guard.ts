@@ -16,9 +16,11 @@ export class AuthGuard implements CanActivate {
         throw new UnauthorizedException('유효하지 않은 사용자입니다.');
       }
       request.user = user;
+      console.log('authGuard 작동 종료');
       return true;
     }
     console.log('***session 찾기 실패!***');
+    console.log('authGuard 작동 종료');
     throw new UnauthorizedException('로그인이 필요합니다.');
   }
 }
