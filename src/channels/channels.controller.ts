@@ -1,5 +1,5 @@
 import { ChannelByIdPipe } from './../pipes/ChannelById.Pipe';
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ChannelsService } from './channels.service';
 import { GetUser } from 'src/auth/user.decorator';
 import { User } from 'src/users/user.entity';
@@ -96,10 +96,24 @@ export class ChannelsController {
   }
 
   @Post(':channel_id')
-  join(@GetUser() user: User, @Param('channel_id', ParseIntPipe) channelId: number) {
-    return this.channelService.join(user, channelId);
+  join(
+    @GetUser() user: User,
+    @Param('channel_id', ParseIntPipe) channelId: number,
+    @Body() body: { providedPassword: string },
+  ) {
+    return this.channelService.join(user, channelId, body.providedPassword);
+  }
+
+  @Post(':channel_id/mute/:user_id')
+  // adminGuard
+    muteUser(
+    @Param('channel_id', ParseIntPipe) channelId: number,
+    @Param('user_id', ParseIntPipe) userId: number,
+  ) {
+    return this.channelService.muteUser(channelId, userId);
   }
 
 
 }
+
 

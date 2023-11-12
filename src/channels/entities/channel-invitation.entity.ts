@@ -7,7 +7,9 @@ export class ChannelInvitation {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, (user) => user.channelInvitations)
+  @ManyToOne(() => User, (user) => user.channelInvitations, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'invitedUserId' })
   user: User;
 

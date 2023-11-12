@@ -26,9 +26,6 @@ export class User {
   @Column({ default: true })
   is2fa: boolean;
 
-  @OneToMany(() => Channel, (channel) => channel.user)
-  channels: Channel[];
-
   @OneToMany(() => ChannelRelation, (channelRelation) => channelRelation.user)
   channelRelations: ChannelRelation[];
 

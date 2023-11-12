@@ -5,10 +5,15 @@ import { UsersModule } from 'src/users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Channel } from './entities/channel.entity';
 import { ChannelRelation } from './entities/channel-relation.entity';
+import { ChannelInvitation } from './entities/channel-invitation.entity';
+import { ChatService } from './channels-chat.service';
+import { ChatGateway } from './channels.gateway';
 
 @Module({
-  imports: [UsersModule, TypeOrmModule.forFeature([Channel, ChannelRelation])],
+  imports: [UsersModule, TypeOrmModule.forFeature([Channel, ChannelRelation,
+    ChannelInvitation])],
   controllers: [ChannelsController],
-  providers: [ChannelsService],
+  providers: [ChannelsService, ChatGateway, ChatService],
+  exports: [ChannelsService, ChatGateway, ChatService]
 })
 export class ChannelsModule {}

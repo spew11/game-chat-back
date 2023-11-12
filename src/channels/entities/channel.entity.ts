@@ -1,4 +1,3 @@
-import { User } from './../../users/user.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 
 import { ChannelRelation } from './channel-relation.entity';
@@ -30,17 +29,9 @@ export class Channel {
   })
   type: ChannelType;
 
-  @ManyToOne(() => User, (user) => user.channels)
-  @JoinColumn({ name: 'userId' })
-  user: User;
-
-  @OneToMany(() => ChannelRelation, (channelRelation) => channelRelation.channel, {
-    cascade: true,
-  })
+  @OneToMany(() => ChannelRelation, (channelRelation) => channelRelation.channel)
   channelRelations: ChannelRelation[];
 
-  @OneToMany(() => ChannelInvitation, (channelInvitation) => channelInvitation.channel, {
-    cascade: true,
-  })
+  @OneToMany(() => ChannelInvitation, (channelInvitation) => channelInvitation.channel)
   channelInvitations: ChannelInvitation[];
 }
