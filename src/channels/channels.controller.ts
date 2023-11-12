@@ -72,13 +72,13 @@ export class ChannelsController {
   @Put(':channel_id/admin/:user_id/give')
   // ownerguard
   giveAdmin(@Param('channel_id', ParseIntPipe) channelId: number, @Param('user_id', ParseIntPipe) userId: number) {
-    return this.channelService.updateChannelRelation(channelId, userId, { isAdmin: true });
+    return this.channelService.updateAdmin(channelId, userId, { isAdmin: true });
   }
 
   @Put(':channel_id/admin/:user_id/deprive')
   // ownerguard
   depriveAdmin(@Param('channel_id', ParseIntPipe) channelId: number, @Param('user_id', ParseIntPipe) userId: number) {
-    return this.channelService.updateChannelRelation(channelId, userId, { isAdmin: false });
+    return this.channelService.updateAdmin(channelId, userId, { isAdmin: false });
   }
 
   @Put(':channel_id/owner/:user_id')
@@ -98,19 +98,10 @@ export class ChannelsController {
   @Post(':channel_id')
   join(
     @GetUser() user: User,
-    @Param('channel_id', ParseIntPipe) channelId: number,
+    @Param('channel_id', ChannelByIdPipe) channel: Channel,
     @Body() body: { providedPassword: string },
   ) {
-    return this.channelService.join(user, channelId, body.providedPassword);
-  }
-
-  @Post(':channel_id/mute/:user_id')
-  // adminGuard
-    muteUser(
-    @Param('channel_id', ParseIntPipe) channelId: number,
-    @Param('user_id', ParseIntPipe) userId: number,
-  ) {
-    return this.channelService.muteUser(channelId, userId);
+    return this.channelService.join(user, channel, body.providedPassword);
   }
 
 
