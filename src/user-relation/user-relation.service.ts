@@ -35,7 +35,7 @@ export class UserRelationService {
   }
 
   // user-otherUser 관계 객체 삭제
-  async removeUserRelation(userId: number, otherUserId: number): Promise<void> {
+  async removeByIdRelation(userId: number, otherUserId: number): Promise<void> {
     const relation = await this.userRelationRepository.findOne({
       where: {
         user: { id: userId },

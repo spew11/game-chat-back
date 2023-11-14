@@ -24,7 +24,7 @@ export class UsersService {
     return this.userRepository.findOneBy({ id });
   }
 
-  async removeUser(id: number): Promise<void> {
+  async removeById(id: number): Promise<void> {
     const user = await this.findById(id);
     this.userRepository.remove(user);
   }
