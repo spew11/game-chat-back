@@ -83,8 +83,7 @@ export class AuthController {
     const accessToken = req.cookies['access_token'];
     if (accessToken) {
       const userEmail = await this.authService.getEmail(accessToken);
-      createUserDto.email = userEmail;
-      const newUser = await this.authService.joinUser(createUserDto);
+      const newUser = await this.authService.joinUser(userEmail, createUserDto);
       this.authService.loginUser(req, newUser);
       res.send({ redirect: 'home' });
     } else {

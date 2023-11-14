@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Request } from 'express';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
@@ -63,7 +63,7 @@ export class AuthService {
       // }
       // await redisClient.hset(`user:${user.id}`.toString(), { email: user.email });
       req.session.userId = user.id;
-      if (req.session.userId) {
+      if (req?.session.userId) {
         console.log(`***express session 저장 성공!: ${req.session.userId} ***`);
       }
     } else {
@@ -71,11 +71,11 @@ export class AuthService {
     }
   }
 
-  async joinUser(createUserDto: CreateUserDto): Promise<User> {
-    const existUser = await this.usersService.findByEmail(createUserDto.email);
+  async joinUser(userEmail: string, createUserDto: CreateUserDto): Promise<User> {
+    const existUser = await this.usersService.findByEmail(userEmail);
     if (existUser) {
-      throw new ConflictException('이미 가입된 유저입니다.');
+      throw new BadRequestException('이미 가입된 유저입니다.');
     }
-    return this.usersService.createUser(createUserDto);
+    return this.usersService.createUser(userEmail, createUserDto);
   }
 }
