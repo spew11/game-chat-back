@@ -24,18 +24,13 @@ export class UsersService {
     return this.userRepository.findOneBy({ id });
   }
 
-  async removeById(id: number): Promise<void> {
-    const user = await this.findById(id);
-    this.userRepository.remove(user);
-  }
-
   findByEmail(email: string): Promise<User> {
     const options: FindOneOptions<User> = { where: { email } };
     return this.userRepository.findOne(options);
   }
 
-  updateUser(user: User, userDto: UpdateUserDto): void {
-    Object.assign(user, userDto);
+  updateUser(user: User, updateUserDto: UpdateUserDto): void {
+    Object.assign(user, updateUserDto);
     this.userRepository.save(user);
   }
 }
