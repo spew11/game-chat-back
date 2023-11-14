@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserRelationStatusEnum } from 'src/user-relation/enums/user-relation-status.enum';
 import { CreateUserRelationDto } from './dtos/create-user-relation.dto';
 import { User } from 'src/users/user.entity';
+import { In } from 'typeorm';
 
 @Injectable()
 export class UserRelationService {
@@ -146,14 +147,19 @@ export class UserRelationService {
   }
 
   // user기준으로 대인관계 리스트 반환
-  async findAllRelations(userId: number): Promise<User[]> {
+  async findAllFriendRelations(userId: number): Promise<UserRelation[]> {
     const relations = await this.userRelationRepository.find({
       where: {
         user: { id: userId },
+        status: In([
+          UserRelationStatusEnum.FRIEND,
+          UserRelationStatusEnum.FRIEND_REQUEST,
+          UserRelationStatusEnum.PENDING_APPROVAL,
+        ]),
       },
       relations: ['otherUser'],
     });
-    return relations.map((relation) => relation.otherUser);
+    return relations;
   }
 
   // user기준으로 차단 유저리스트 반환

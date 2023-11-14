@@ -1,6 +1,6 @@
 import { Controller, Param, Post, Delete, Get, Put, UseGuards } from '@nestjs/common';
 import { UserRelationService } from './user-relation.service';
-import { ShowFriendsDto } from './dtos/show-friends.dto';
+import { ShowFriendRelationsDto } from './dtos/show-friend-relations.dto';
 import { ShowBlockedUsersDto } from './dtos/show-blocked-users.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/user.decorator';
@@ -13,15 +13,16 @@ export class UserRelationController {
   constructor(private userRelationService: UserRelationService) {}
 
   @Get('friends')
-  async getFriendsList(@GetUser() user: User): Promise<ShowFriendsDto[]> {
-    const friends = await this.userRelationService.findAllRelations(user.id);
-    const userDtos: ShowFriendsDto[] = friends.map((friend) => {
-      const userDto = new ShowFriendsDto();
-      userDto.otherUserId = friend.id;
-      userDto.nickname = friend.nickname;
-      return userDto;
+  async getRelationList(@GetUser() user: User): Promise<ShowFriendRelationsDto[]> {
+    const relations = await this.userRelationService.findAllFriendRelations(user.id);
+    const showFriendRelationsDtos: ShowFriendRelationsDto[] = relations.map((relation) => {
+      const showFriendRelationsDto = new ShowFriendRelationsDto();
+      showFriendRelationsDto.otherUserId = relation.otherUser.id;
+      showFriendRelationsDto.nickname = relation.otherUser.nickname;
+      showFriendRelationsDto.status = relation.status;
+      return showFriendRelationsDto;
     });
-    return userDtos;
+    return showFriendRelationsDtos;
   }
 
   @Post('friends/:user_id/request')
