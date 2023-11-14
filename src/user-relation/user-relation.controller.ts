@@ -14,7 +14,7 @@ export class UserRelationController {
 
   @Get('friends')
   async getFriendsList(@GetUser() user: User): Promise<ShowFriendsDto[]> {
-    const friends = await this.userRelationService.findAllFriends(user.id);
+    const friends = await this.userRelationService.findAllRelations(user.id);
     const userDtos: ShowFriendsDto[] = friends.map((friend) => {
       const userDto = new ShowFriendsDto();
       userDto.otherUserId = friend.id;

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { UserRelation } from './user-relation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,7 +19,7 @@ export class UserRelationService {
     if (userSide?.status === UserRelationStatusEnum.FRIEND && theOtherSide?.status === UserRelationStatusEnum.FRIEND) {
       this.userRelationRepository.remove([userSide, theOtherSide]);
     } else {
-      throw new NotFoundException('잘못된 요청입니다.');
+      throw new BadRequestException('잘못된 요청입니다.');
     }
   }
 
@@ -36,16 +36,12 @@ export class UserRelationService {
 
   // user-otherUser 관계 객체 삭제
   async removeByIdRelation(userId: number, otherUserId: number): Promise<void> {
-    const relation = await this.userRelationRepository.findOne({
-      where: {
-        user: { id: userId },
-        otherUser: { id: otherUserId },
-      },
-    });
-    if (!relation) {
-      throw new NotFoundException('존재하지 않는 유저 관계입니다.');
+    const relation = await this.findUserRelation(userId, otherUserId);
+    if (relation) {
+      this.userRelationRepository.remove(relation);
+    } else {
+      throw new BadRequestException('존재하지 않는 유저 관계입니다.');
     }
-    this.userRelationRepository.remove(relation);
   }
 
   // user-otherUser 관계 객체 생성
@@ -89,21 +85,21 @@ export class UserRelationService {
     const recipientSide = await this.findUserRelation(recipient.id, requester.id);
     if (!requesterSide) {
       // user-otherUser 인스턴스 생성
-      const requesterDto = new CreateUserRelationDto();
-      requesterDto.user = requester;
-      requesterDto.otherUser = recipient;
-      requesterDto.status = UserRelationStatusEnum.FRIEND_REQUEST;
-      this.userRelationRepository.save(requesterDto);
+      this.createUserRelation({
+        user: requester,
+        otherUser: recipient,
+        status: UserRelationStatusEnum.FRIEND_REQUEST,
+      });
       if (!recipientSide) {
         // otherUser-user 인스턴스 생성
-        const recipientDto = new CreateUserRelationDto();
-        recipientDto.user = recipient;
-        recipientDto.otherUser = requester;
-        recipientDto.status = UserRelationStatusEnum.PENDING_APPROVAL;
-        this.userRelationRepository.save(recipientDto);
+        this.createUserRelation({
+          user: recipient,
+          otherUser: requester,
+          status: UserRelationStatusEnum.PENDING_APPROVAL,
+        });
       }
     } else {
-      throw new NotFoundException('잘못된 요청입니다.');
+      throw new BadRequestException('잘못된 요청입니다.');
     }
   }
 
@@ -116,11 +112,11 @@ export class UserRelationService {
       this.userRelationRepository.save(userSide);
     } else {
       // userSide 관계가 존재하지 않는다면 차단 관계 생성
-      const createUserRelationDto: CreateUserRelationDto = new CreateUserRelationDto();
-      createUserRelationDto.user = user;
-      createUserRelationDto.otherUser = otherUser;
-      createUserRelationDto.status = UserRelationStatusEnum.BLOCKED;
-      this.createUserRelation(createUserRelationDto);
+      this.createUserRelation({
+        user: user,
+        otherUser: otherUser,
+        status: UserRelationStatusEnum.BLOCKED,
+      });
     }
 
     // 상대방 입장에서의 관계가 존재하는데, 상대방이 친구요청이나 차단을 한경우가 아니면 삭제함
@@ -145,16 +141,15 @@ export class UserRelationService {
       theOtherSide.status = UserRelationStatusEnum.FRIEND;
       this.userRelationRepository.save([userSide, theOtherSide]);
     } else {
-      throw new NotFoundException('잘못된 요청입니다.');
+      throw new BadRequestException('잘못된 요청입니다.');
     }
   }
 
-  // user기준으로 친구인 유저리스트 반환
-  async findAllFriends(userId: number): Promise<User[]> {
+  // user기준으로 대인관계 리스트 반환
+  async findAllRelations(userId: number): Promise<User[]> {
     const relations = await this.userRelationRepository.find({
       where: {
         user: { id: userId },
-        status: UserRelationStatusEnum.FRIEND,
       },
       relations: ['otherUser'],
     });
@@ -180,11 +175,12 @@ export class UserRelationService {
       if (theOtherSide?.status == UserRelationStatusEnum.FRIEND_REQUEST) {
         // 상대방이 나에게 친구요청을 했었다면, 친구수락펜딩으로 수정
         userSide.status = UserRelationStatusEnum.PENDING_APPROVAL;
+        this.userRelationRepository.save(userSide);
       } else {
         this.userRelationRepository.remove(userSide);
       }
     } else {
-      throw new NotFoundException('잘못된 요청입니다.');
+      throw new BadRequestException('잘못된 요청입니다.');
     }
   }
 }
