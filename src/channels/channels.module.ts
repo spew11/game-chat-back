@@ -10,8 +10,8 @@ import { ChannelInvitation } from './entities/channel-invitation.entity';
 @Module({
   imports: [UsersModule, TypeOrmModule.forFeature([Channel, ChannelRelation,
     ChannelInvitation])],
-  controllers: [ChannelsController],
-  providers: [ChannelsService],
-  exports: [ChannelsService]
+  // controllers: [ChannelsController],
+  // providers: [ChannelsService],
+  // exports: [ChannelsService]
 })
 export class ChannelsModule {}
