@@ -37,16 +37,6 @@ export class UserRelationService {
     }
   }
 
-  // user-otherUser 관계 객체 삭제
-  async removeByIdRelation(userId: number, otherUserId: number): Promise<void> {
-    const relation = await this.findUserRelation(userId, otherUserId);
-    if (relation) {
-      this.userRelationRepository.remove(relation);
-    } else {
-      throw new BadRequestException('존재하지 않는 유저 관계입니다.');
-    }
-  }
-
   // user-otherUser 관계 객체 생성
   createUserRelation(createUserRelationDto: CreateUserRelationDto): Promise<UserRelation> {
     return this.userRelationRepository.save(createUserRelationDto);
