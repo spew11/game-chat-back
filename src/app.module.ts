@@ -8,6 +8,7 @@ import { TestService } from './test.service';
 import { ConfigModule } from '@nestjs/config';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ChannelsModule } from './channels/channels.module';
+import { CommonsModule } from './commons/commons.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { ChannelsModule } from './channels/channels.module';
       envFilePath: '.env',
     }),
     NotificationsModule,
-    ChannelsModule
+    ChannelsModule,
+    CommonsModule,
   ],
   providers: [TestService],
 })
