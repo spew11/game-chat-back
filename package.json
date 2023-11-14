@@ -28,7 +28,9 @@
     "@nestjs/core": "^10.2.8",
     "@nestjs/mapped-types": "^2.0.2",
     "@nestjs/platform-express": "^10.2.7",
+    "@nestjs/platform-socket.io": "^10.2.8",
     "@nestjs/typeorm": "^10.0.0",
+    "@nestjs/websockets": "^10.2.8",
     "@types/express-session": "^1.17.9",
     "axios": "^1.5.1",
     "class-transformer": "^0.5.1",
@@ -42,6 +44,7 @@
     "redis": "^4.6.10",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.7.2",
     "typeorm": "^0.3.17"
   },
   "devDependencies": {

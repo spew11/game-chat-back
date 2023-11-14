@@ -32,7 +32,8 @@ export class TestService {
     ];
 
     for (const userData of users) {
-      await this.userRepository.save(userData);
+      if (!(await this.userRepository.findBy({ email: userData.email })))
+        await this.userRepository.save(userData);
     }
   }
 
@@ -90,7 +91,13 @@ export class TestService {
       status: UserRelationStatusEnum.PENDING_APPROVAL,
     });
     for (const userRelation of userRelations) {
-      await this.userRelationRepository.save(userRelation);
+      if (
+        !(await this.userRelationRepository.findBy({
+          user: userRelation.user,
+          otherUser: userRelation.otherUser,
+        }))
+      )
+        await this.userRelationRepository.save(userRelation);
     }
   }
 }
