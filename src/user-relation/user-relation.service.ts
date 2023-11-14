@@ -32,6 +32,8 @@ export class UserRelationService {
       theOtherSide?.status === UserRelationStatusEnum.FRIEND_REQUEST
     ) {
       this.userRelationRepository.remove([userSide, theOtherSide]);
+    } else {
+      throw new BadRequestException('잘못된 요청입니다.');
     }
   }
 
@@ -146,9 +148,9 @@ export class UserRelationService {
     }
   }
 
-  // user기준으로 대인관계 리스트 반환
+  // user기준으로 차단을 제외한 모든 종류의 친구관계 리스트 반환
   async findAllFriendRelations(userId: number): Promise<UserRelation[]> {
-    const relations = await this.userRelationRepository.find({
+    return this.userRelationRepository.find({
       where: {
         user: { id: userId },
         status: In([
@@ -159,7 +161,6 @@ export class UserRelationService {
       },
       relations: ['otherUser'],
     });
-    return relations;
   }
 
   // user기준으로 차단 유저리스트 반환
