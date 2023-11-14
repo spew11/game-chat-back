@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { FindOneOptions, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDetailsDto } from './dto/update-user-details.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -34,7 +34,7 @@ export class UsersService {
     return this.userRepository.findOne(options);
   }
 
-  updateUser(user: User, userDto: UpdateUserDetailsDto): void {
+  updateUser(user: User, userDto: UpdateUserDto): void {
     Object.assign(user, userDto);
     this.userRepository.save(user);
   }

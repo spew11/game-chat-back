@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ShowUserOverviewDto } from './dto/show-user-overview.dto';
 import { ShowUserDetailsDto } from './dto/show-user-details.dto';
-import { UpdateUserDetailsDto } from './dto/update-user-details.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/user.decorator';
 import { User } from './user.entity';
@@ -51,7 +51,7 @@ export class UsersController {
   }
 
   @Put('me')
-  updateUser(@GetUser() user: User, @Body() userDto: UpdateUserDetailsDto): void {
+  updateUser(@GetUser() user: User, @Body() userDto: UpdateUserDto): void {
     this.usersService.updateUser(user, userDto);
   }
 }

@@ -1,4 +1,4 @@
-export class UpdateUserDetailsDto {
+export class UpdateUserDto {
   nickname: string;
   avatar: string;
   bio: string;
