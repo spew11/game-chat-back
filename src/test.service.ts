@@ -32,7 +32,7 @@ export class TestService {
     ];
 
     for (const userData of users) {
-      if (!(await this.userRepository.findBy({ email: userData.email })))
+      if (!(await this.usersService.findByEmail(userData.email)))
         await this.userRepository.save(userData);
     }
   }
@@ -92,7 +92,7 @@ export class TestService {
     });
     for (const userRelation of userRelations) {
       if (
-        !(await this.userRelationRepository.findBy({
+        !(await this.userRelationRepository.findOneBy({
           user: userRelation.user,
           otherUser: userRelation.otherUser,
         }))
