@@ -37,10 +37,8 @@ export class ChannelsService {
       }
       const salt = await bcrypt.genSalt();
       hashedPassword = await bcrypt.hash(password, salt);
-  } else if ((type as ChannelType) !== ChannelType.protected && password) {
-      // 채널이 아니면 입력된 비밀번호를 무시
-      console.warn('비밀번호 무시');
-  }
+  } // protected 채널이 아니면 입력된 비밀번호를 무시
+
 
     let channel = this.channelRepository.create({ title, password: hashedPassword, type });
 
