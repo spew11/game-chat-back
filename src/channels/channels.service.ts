@@ -57,20 +57,21 @@ export class ChannelsService {
 }
 
   async updateChannel(channel: Channel, channelDto: ChannelDto): Promise<Channel> {
-    if (channelDto.password) {
-      channelDto.password = await this.hashPassword(channelDto.password);
+    if (channelDto.type === ChannelType.protected && channelDto.password) {
+        channelDto.password = await this.hashPassword(channelDto.password);
+        // protected한 채널로 업데이트하고 비밀번호가 있다면
+    } else if (channelDto.type === ChannelType.protected && !channel.password) {
+        throw new BadRequestException('Protected한 채널에는 비밀번호가 필요합니다!');
     }
+
+    // protected한 채널로 업데이트하는 게 아니라면 비밀번호 제거
+    if (channelDto.type && channelDto.type !== ChannelType.protected) {
+        channelDto.password = null;
+    }
+
     Object.assign(channel, channelDto);
 
-    this.checkTypeAndPassword(channel);
-
     return this.channelRepository.save(channel);
-  }
-
-  private async checkTypeAndPassword(channel: Channel): Promise<void> {
-    if (channel.type === ChannelType.protected && !channel.password) {
-      throw new BadRequestException('Protected한 채널을 생성하려면 비밀번호를 입력해주세요!');
-    }
   }
 
   private async hashPassword(password: string): Promise<string> {
