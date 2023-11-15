@@ -51,8 +51,9 @@ export class ChannelsController {
 
   @Post(':channel_id/ban/:user_id')
   @UseGuards(AdminGuard)
-  banUser(@Param('channel_id', ChannelByIdPipe) channel: Channel, @Param('user_id', UserByIdPipe) userId: number) {
-    return this.channelService.banUser(channel, userId);
+  banUser(@Param('channel_id', ChannelByIdPipe) channel: Channel, @Param('user_id', UserByIdPipe) user: User) {
+    console.log(user.id);
+    return this.channelService.banUser(channel, user.id);
   }
 
   @Delete(':channel_id/ban/:user_id')
