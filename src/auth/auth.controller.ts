@@ -65,7 +65,7 @@ export class AuthController {
     const userEmail = await this.authService.getEmail(accessToken);
     const user = await this.usersService.findByEmail(userEmail);
     if (user) {
-      this.authService.loginUser(req, user);
+      await this.authService.loginUser(req, user);
       res.send({ redirect: 'home' });
     } else {
       res.header('Set-Cookie', [`access_token=${accessToken}; SameSite=None; Secure; Max-Age=720000; HttpOnly=false`]);
@@ -79,7 +79,7 @@ export class AuthController {
     if (accessToken) {
       const userEmail = await this.authService.getEmail(accessToken);
       const newUser = await this.authService.joinUser(userEmail, createUserDto);
-      this.authService.loginUser(req, newUser);
+      await this.authService.loginUser(req, newUser);
       res.send({ redirect: 'home' });
     } else {
       throw new UnauthorizedException('42로그인이 필요합니다.');
@@ -92,7 +92,7 @@ export class AuthController {
   async loginTest(@Req() req: Request, @Res() res: Response, @Param('email') email: string) {
     const user = await this.usersService.findByEmail(email);
     console.log(`exist email: ${email}`);
-    this.authService.loginUser(req, user);
+    await this.authService.loginUser(req, user);
     res.send(`${email} 로그인 성공`);
   }
 }
