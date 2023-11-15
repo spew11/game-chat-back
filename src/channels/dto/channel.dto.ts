@@ -1,6 +1,5 @@
-import { IsEnum, IsString, MaxLength, MinLength, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsString, MaxLength, MinLength, IsNotEmpty, ValidateIf } from 'class-validator';
 import { ChannelType } from '../entities/channel.entity';
-import { Optional } from '@nestjs/common';
 
 export class ChannelDto {
   @IsString()
@@ -8,13 +7,11 @@ export class ChannelDto {
   title: string;
 
   @IsString()
-  @Optional()
-  @IsNotEmpty({ groups: [ChannelType.protected] }) // proteced만 패스워드가 필요하게 만든다
+  @ValidateIf(o => o.type === ChannelType.protected) // 오직 protected일 때만 적용
+  @IsNotEmpty()
   @MinLength(4)
-  password: string;
+  password?: string; // ? 이것으로 public private 채널에서 비밀번호를 필요 없게 만든다
 
-  @IsEnum(ChannelType, {
-    each: true, // enum값의 숫자 허용
-  })
+  @IsEnum(ChannelType)
   type: ChannelType;
 }

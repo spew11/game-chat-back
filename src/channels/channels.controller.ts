@@ -7,6 +7,7 @@ import { ChannelDto } from './dto/channel.dto';
 import { Channel } from './entities/channel.entity';
 import { UserByIdPipe } from 'src/pipes/UserById.pipe';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { AdminGuard, OwnerGuard } from './channels.guard';
 
 @UseGuards(AuthGuard)
 @Controller('channels')
@@ -19,7 +20,7 @@ export class ChannelsController {
   }
 
   @Put(':channel_id')
-  // ownerGuard
+  @UseGuards(OwnerGuard)
   updateChannel(
     @Param('channel_id', ChannelByIdPipe) channel: Channel,
     @Body() channelDto: ChannelDto,
@@ -43,19 +44,19 @@ export class ChannelsController {
   }
 
   @Get(':channel_id/ban')
-  // adminguard
+  @UseGuards(AdminGuard)
   getAllChannelBannedUsers(@Param('channel_id', ParseIntPipe) channelId: number) {
     return this.channelService.findAllChannelBannedUsers(channelId);
   }
 
   @Post(':channel_id/ban/:user_id')
-  // adminguard
+  @UseGuards(AdminGuard)
   banUser(@Param('channel_id', ChannelByIdPipe) channel: Channel, @Param('user_id', UserByIdPipe) userId: number) {
     return this.channelService.banUser(channel, userId);
   }
 
   @Delete(':channel_id/ban/:user_id')
-  // adminguard
+  @UseGuards(AdminGuard)
   cancelBannedUser(
     @Param('channel_id', ParseIntPipe) channelId: number,
     @Param('user_id', ParseIntPipe) userId: number,
@@ -64,25 +65,25 @@ export class ChannelsController {
   }
 
   @Delete(':channel_id/kick/:user_id')
-  // adminguard
+  @UseGuards(AdminGuard)
   kickUser(@Param('channel_id', ParseIntPipe) channelId: number, @Param('user_id', ParseIntPipe) userId: number) {
     return this.channelService.kickUser(channelId, userId);
   }
 
   @Put(':channel_id/admin/:user_id/give')
-  // ownerguard
+  @UseGuards(OwnerGuard)
   giveAdmin(@Param('channel_id', ParseIntPipe) channelId: number, @Param('user_id', ParseIntPipe) userId: number) {
     return this.channelService.updateAdmin(channelId, userId, { isAdmin: true });
   }
 
   @Put(':channel_id/admin/:user_id/deprive')
-  // ownerguard
+  @UseGuards(OwnerGuard)
   depriveAdmin(@Param('channel_id', ParseIntPipe) channelId: number, @Param('user_id', ParseIntPipe) userId: number) {
     return this.channelService.updateAdmin(channelId, userId, { isAdmin: false });
   }
 
   @Put(':channel_id/owner/:user_id')
-  // ownerguard
+  @UseGuards(OwnerGuard)
   changeOwner(@GetUser() owner: User, @Param('channel_id', ParseIntPipe) channelId: number, @Param('user_id', ParseIntPipe) successorId: number) {
     return this.channelService.changeOwner(channelId, owner.id, successorId);
   }

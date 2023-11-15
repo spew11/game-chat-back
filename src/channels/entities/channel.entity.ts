@@ -19,7 +19,7 @@ export class Channel {
   title: string;
 
   @Column({ nullable: true })
-  @MinLength(4)
+  // @MinLength(4) 이걸로 문제 생김
   password: string;
 
   @Column({
