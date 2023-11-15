@@ -11,7 +11,7 @@ import { ChatGateway } from './channels.gateway';
 import { forwardRef } from '@nestjs/common';
 
 @Module({
-  imports: [forwardRef(() => UsersModule), TypeOrmModule.forFeature([Channel, ChannelRelation,
+  imports: [UsersModule, TypeOrmModule.forFeature([Channel, ChannelRelation,
     ChannelInvitation])],
   controllers: [ChannelsController],
   providers: [ChannelsService, ChatGateway, ChatService],

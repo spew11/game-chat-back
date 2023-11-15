@@ -11,7 +11,7 @@ export class AdminGuard implements CanActivate {
     const channelId = request.params.channel_id;
 
     if (!user || !channelId) {
-      return false;
+      throw new ForbiddenException('유저랑 채널 오류');
     }
 
     const relation = await this.channelService.findChannelRelation(channelId, user.id);
@@ -33,7 +33,7 @@ export class OwnerGuard implements CanActivate {
     const channelId = request.params.channel_id;
 
     if (!user || !channelId) {
-      return false;
+      throw new ForbiddenException('유저랑 채널 오류');
     }
 
     const relation = await this.channelService.findChannelRelation(channelId, user.id);

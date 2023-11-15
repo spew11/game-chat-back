@@ -8,8 +8,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ChannelDto } from './dto/channel.dto';
 import * as bcrypt from 'bcrypt';
 import { ChannelInvitation } from './entities/channel-invitation.entity';
-import { ChatService } from './channels-chat.service';
-import { ChatGateway } from './channels.gateway';
+// import { ChatService } from './channels-chat.service';
+// import { ChatGateway } from './channels.gateway';
 
 @Injectable()
 export class ChannelsService {
@@ -20,10 +20,10 @@ export class ChannelsService {
     private channelRelationRepository: Repository<ChannelRelation>,
     @InjectRepository(ChannelInvitation)
     private channelInvitationRepository: Repository<ChannelInvitation>,
-    @Inject(forwardRef(() => ChatService))
-    private readonly chatService: ChatService,
-    @Inject(forwardRef(() => ChatGateway))
-    private readonly chatGateway: ChatGateway,
+    // @Inject(forwardRef(() => ChatService))
+    // private readonly chatService: ChatService,
+    // @Inject(forwardRef(() => ChatGateway))
+    // private readonly chatGateway: ChatGateway,
   ) { }
 
   async createChannel(owner: User, channelDto: ChannelDto) {
@@ -172,7 +172,7 @@ export class ChannelsService {
       throw new ForbiddenException('이미 ban된 유저입니다!');
     }
 
-    this.chatGateway.kickMember(channel.id, userId);
+    // this.chatGateway.kickMember(channel.id, userId);
     // ban 전에 kick 처리
 
     channelRelation.isBanned = true;
@@ -210,7 +210,7 @@ export class ChannelsService {
     }
 
     // kick 실시간 소켓 처리
-    this.chatGateway.kickMember(channelId, kickedUserId);
+    // this.chatGateway.kickMember(channelId, kickedUserId);
     this.channelRelationRepository.remove(kickedUserRelation);
   }
 
@@ -362,38 +362,69 @@ export class ChannelsService {
     });
   }
 
-  async unmuteUser(channelId: number, userId: number): Promise<boolean> {
-    const channel = await this.channelRepository.findOne({ where: { id: channelId } });
+  // async muteUser(channelId: number, userId: number): Promise<boolean> {
+  //   const channel = await this.channelRepository.findOne({ where: { id: channelId } });
 
-    if (!channel) {
-      throw new NotFoundException('채널을 찾을 수 없습니다!');
-    }
+  //   if (!channel) {
+  //     throw new NotFoundException('채널을 찾을 수 없습니다!');
+  //   }
 
-    const channelRelation = await this.channelRelationRepository.findOne({
-      where: { channel, user: { id: userId } },
-    });
+  //   const channelRelation = await this.channelRelationRepository.findOne({
+  //     where: { channel, user: { id: userId } },
+  //   });
 
-    if (!channelRelation) {
-      throw new NotFoundException('유저가 채널의 멤버가 아닙니다!');
-    }
+  //   if (!channelRelation) {
+  //     throw new NotFoundException('유저가 채널의 멤버가 아닙니다!');
+  //   }
 
-    if (!channelRelation.isMuted) {
-      throw new BadRequestException('유저가 이미 unmuted된 상태입니다.');
-    }
+  //   if (channelRelation.isOwner) {
+  //     throw new ForbiddenException('소유자는 mute될 수 없습니다!');
+  //   }
 
-    channelRelation.isMuted = false;
-    channelRelation.muteCreatedAt = null;
+  //   if (channelRelation.isMuted) {
+  //     throw new BadRequestException('이미 유저가 muted된 상태입니다!');
+  //   }
 
-    await this.channelRelationRepository.save(channelRelation);
+  //   channelRelation.isMuted = true;
+  //   channelRelation.muteCreatedAt = new Date();
 
-    this.chatService.addMutedMember(
-      channelId,
-      userId,
-      0, // mutedTime 0
-      null // createdAt null
-    );
+  //   await this.channelRelationRepository.save(channelRelation);
 
-    return true;
-  }
+  //   return true;
+  // }
+
+  // async unmuteUser(channelId: number, userId: number): Promise<boolean> {
+  //   const channel = await this.channelRepository.findOne({ where: { id: channelId } });
+
+  //   if (!channel) {
+  //     throw new NotFoundException('채널을 찾을 수 없습니다!');
+  //   }
+
+  //   const channelRelation = await this.channelRelationRepository.findOne({
+  //     where: { channel, user: { id: userId } },
+  //   });
+
+  //   if (!channelRelation) {
+  //     throw new NotFoundException('유저가 채널의 멤버가 아닙니다!');
+  //   }
+
+  //   if (!channelRelation.isMuted) {
+  //     throw new BadRequestException('유저가 이미 unmuted된 상태입니다.');
+  //   }
+
+  //   channelRelation.isMuted = false;
+  //   channelRelation.muteCreatedAt = null;
+
+  //   await this.channelRelationRepository.save(channelRelation);
+
+  //   this.chatService.addMutedMember(
+  //     channelId,
+  //     userId,
+  //     0, // mutedTime 0
+  //     null // createdAt null
+  //   );
+
+  //   return true;
+  // }
 
 }
