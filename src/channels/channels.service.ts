@@ -216,6 +216,10 @@ export class ChannelsService {
      },
     });
 
+    if (!requestedUserRelation) {
+      throw new NotFoundException(`채널과 유저가 없습니다!}.`);
+    }
+
     if (requestedUserRelation.isOwner) {
       throw new ForbiddenException('채널 소유자의 권한을 변경할 수 없습니다!');
     }
