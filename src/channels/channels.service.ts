@@ -82,13 +82,13 @@ export class ChannelsService {
     return channels;
   }
 
-  async findOneChannel(channelId: number):Promise<Channel>  {
+  async findOneChannel(channelId: number): Promise<Channel>  {
     const channel = await this.channelRepository.findOne({ where: { id: channelId } });
 
     return channel;
   }
 
-  async exitChannel(user: User, channelId: number):Promise<void> {
+  async exitChannel(user: User, channelId: number): Promise<void> {
     let ifTranferNeeded = false;
     const channelRelation = await this.channelRelationRepository.findOne({
       where: { user, channel: { id: channelId } },
@@ -126,7 +126,7 @@ export class ChannelsService {
     this.channelRelationRepository.save(earliestOwnerRelation);
   }
 
-  async findChannelWithMembers(channelId: number):Promise<Channel>  {
+  async findChannelWithMembers(channelId: number): Promise<Channel>  {
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
       relations: {
