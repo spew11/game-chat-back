@@ -18,7 +18,7 @@ export class UserRelationService {
     const userSide = await this.findUserRelation(userId, otherUserId);
     const theOtherSide = await this.findUserRelation(otherUserId, userId);
     if (userSide?.status === UserRelationStatusEnum.FRIEND && theOtherSide?.status === UserRelationStatusEnum.FRIEND) {
-      this.userRelationRepository.remove([userSide, theOtherSide]);
+      await this.userRelationRepository.remove([userSide, theOtherSide]);
     } else {
       throw new BadRequestException('잘못된 요청입니다.');
     }
@@ -31,7 +31,7 @@ export class UserRelationService {
       userSide?.status === UserRelationStatusEnum.PENDING_APPROVAL &&
       theOtherSide?.status === UserRelationStatusEnum.FRIEND_REQUEST
     ) {
-      this.userRelationRepository.remove([userSide, theOtherSide]);
+      await this.userRelationRepository.remove([userSide, theOtherSide]);
     } else {
       throw new BadRequestException('잘못된 요청입니다.');
     }
@@ -78,14 +78,14 @@ export class UserRelationService {
     const recipientSide = await this.findUserRelation(recipient.id, requester.id);
     if (!requesterSide) {
       // user-otherUser 인스턴스 생성
-      this.createUserRelation({
+      await this.createUserRelation({
         user: requester,
         otherUser: recipient,
         status: UserRelationStatusEnum.FRIEND_REQUEST,
       });
       if (!recipientSide) {
         // otherUser-user 인스턴스 생성
-        this.createUserRelation({
+        await this.createUserRelation({
           user: recipient,
           otherUser: requester,
           status: UserRelationStatusEnum.PENDING_APPROVAL,
@@ -102,10 +102,10 @@ export class UserRelationService {
     // 이미 userSide 관계가 존재한다면 status=block으로 변경
     if (userSide && userSide.status != UserRelationStatusEnum.BLOCKED) {
       userSide.status = UserRelationStatusEnum.BLOCKED;
-      this.userRelationRepository.save(userSide);
+      await this.userRelationRepository.save(userSide);
     } else {
       // userSide 관계가 존재하지 않는다면 차단 관계 생성
-      this.createUserRelation({
+      await this.createUserRelation({
         user: user,
         otherUser: otherUser,
         status: UserRelationStatusEnum.BLOCKED,
@@ -118,7 +118,7 @@ export class UserRelationService {
       theOtherSide?.status === UserRelationStatusEnum.FRIEND ||
       theOtherSide?.status === UserRelationStatusEnum.PENDING_APPROVAL
     ) {
-      this.userRelationRepository.remove(theOtherSide);
+      await this.userRelationRepository.remove(theOtherSide);
     }
   }
 
@@ -132,7 +132,7 @@ export class UserRelationService {
     ) {
       userSide.status = UserRelationStatusEnum.FRIEND;
       theOtherSide.status = UserRelationStatusEnum.FRIEND;
-      this.userRelationRepository.save([userSide, theOtherSide]);
+      await this.userRelationRepository.save([userSide, theOtherSide]);
     } else {
       throw new BadRequestException('잘못된 요청입니다.');
     }
@@ -172,9 +172,9 @@ export class UserRelationService {
       if (theOtherSide?.status == UserRelationStatusEnum.FRIEND_REQUEST) {
         // 상대방이 나에게 친구요청을 했었다면, 친구수락펜딩으로 수정
         userSide.status = UserRelationStatusEnum.PENDING_APPROVAL;
-        this.userRelationRepository.save(userSide);
+        await this.userRelationRepository.save(userSide);
       } else {
-        this.userRelationRepository.remove(userSide);
+        await this.userRelationRepository.remove(userSide);
       }
     } else {
       throw new BadRequestException('잘못된 요청입니다.');
