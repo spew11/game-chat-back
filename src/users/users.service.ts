@@ -16,8 +16,11 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  createUser(userDto: CreateUserDto): Promise<User> {
-    return this.userRepository.save(userDto);
+  createUser(userEmail: string, createUserDto: CreateUserDto): Promise<User> {
+    return this.userRepository.save({
+      email: userEmail,
+      ...createUserDto,
+    });
   }
 
   findById(id: number): Promise<User> {

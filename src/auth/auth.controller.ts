@@ -28,21 +28,16 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @Post('logout')
   async logout(@Req() req: Request, @Res() res: Response): Promise<void> {
-    try {
-      await new Promise((resolve, reject) => {
-        req.session.destroy((err) => {
-          if (err) {
-            reject(new InternalServerErrorException('session id detroy error'));
-          }
-          res.clearCookie('session-cookie');
-          res.send('로그아웃 성공');
-          resolve(undefined);
-        });
+    await new Promise((resolve, reject) => {
+      req.session.destroy((err) => {
+        if (err) {
+          reject(console.log(`LOGOUT ERR: ${err}`));
+        }
+        res.clearCookie('session-cookie');
+        res.send('로그아웃 성공');
+        resolve(undefined);
       });
-    } catch (err) {
-      console.log(`LOGOUT ERR: ${err}`);
-      throw err;
-    }
+    });
     // const sessionKey = `user:${user.id}`;
     // if (await redisClient.exists(sessionKey)) {
     //   await redisClient.hdel(sessionKey, 'email');
@@ -70,7 +65,7 @@ export class AuthController {
     const userEmail = await this.authService.getEmail(accessToken);
     const user = await this.usersService.findByEmail(userEmail);
     if (user) {
-      this.authService.loginUser(req, user);
+      await this.authService.loginUser(req, user);
       res.send({ redirect: 'home' });
     } else {
       res.header('Set-Cookie', [`access_token=${accessToken}; SameSite=None; Secure; Max-Age=720000; HttpOnly=false`]);
@@ -83,9 +78,8 @@ export class AuthController {
     const accessToken = req.cookies['access_token'];
     if (accessToken) {
       const userEmail = await this.authService.getEmail(accessToken);
-      createUserDto.email = userEmail;
-      const newUser = await this.authService.joinUser(createUserDto);
-      this.authService.loginUser(req, newUser);
+      const newUser = await this.authService.joinUser(userEmail, createUserDto);
+      await this.authService.loginUser(req, newUser);
       res.send({ redirect: 'home' });
     } else {
       throw new UnauthorizedException('42로그인이 필요합니다.');
@@ -98,7 +92,7 @@ export class AuthController {
   async loginTest(@Req() req: Request, @Res() res: Response, @Param('email') email: string) {
     const user = await this.usersService.findByEmail(email);
     console.log(`exist email: ${email}`);
-    this.authService.loginUser(req, user);
+    await this.authService.loginUser(req, user);
     res.send(`${email} 로그인 성공`);
   }
 }

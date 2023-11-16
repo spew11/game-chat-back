@@ -5,7 +5,7 @@ import { RedisService } from 'src/commons/redis-client.service';
 
 declare module 'express-session' {
   interface SessionData {
-    email: string;
+    userId: number;
   }
 }
 declare module 'http' {
