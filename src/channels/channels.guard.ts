@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { ChannelsService } from 'src/channels/channels.service';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class AdminGuard implements CanActivate {
     const channelId = request.params.channel_id;
 
     if (!user || !channelId) {
-      throw new ForbiddenException('유저랑 채널 오류');
+      throw new BadRequestException('유저랑 채널 정보가 없습니다!');
     }
 
     const relation = await this.channelService.findChannelRelation(channelId, user.id);
@@ -33,7 +33,7 @@ export class OwnerGuard implements CanActivate {
     const channelId = request.params.channel_id;
 
     if (!user || !channelId) {
-      throw new ForbiddenException('유저랑 채널 오류');
+      throw new BadRequestException('유저랑 채널 정보가 없습니다!');
     }
 
     const relation = await this.channelService.findChannelRelation(channelId, user.id);

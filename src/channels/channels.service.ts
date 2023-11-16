@@ -26,7 +26,7 @@ export class ChannelsService {
     // private readonly chatGateway: ChatGateway,
   ) { }
 
-  async createChannel(owner: User, channelDto: ChannelDto) {
+  async createChannel(owner: User, channelDto: ChannelDto): Promise<Channel> {
     const { title, password, type } = channelDto;
 
     let hashedPassword = null;
@@ -35,10 +35,8 @@ export class ChannelsService {
       if (!password) {
           throw new BadRequestException('protected 채널에는 패스워드가 필요합니다!');
       }
-      const salt = await bcrypt.genSalt();
-      hashedPassword = await bcrypt.hash(password, salt);
+      hashedPassword = await this.hashPassword(password);
   } // protected 채널이 아니면 입력된 비밀번호를 무시
-
 
     let channel = this.channelRepository.create({ title, password: hashedPassword, type });
 
@@ -79,18 +77,18 @@ export class ChannelsService {
     return bcrypt.hash(password, salt);
   }
 
-  async findAllChannels() {
+  async findAllChannels(): Promise<Channel[]> {
     const channels = await this.channelRepository.find();
     return channels;
   }
 
-  async findOneChannel(channelId: number) {
+  async findOneChannel(channelId: number):Promise<Channel>  {
     const channel = await this.channelRepository.findOne({ where: { id: channelId } });
 
     return channel;
   }
 
-  async exitChannel(user: User, channelId: number) {
+  async exitChannel(user: User, channelId: number):Promise<void> {
     let ifTranferNeeded = false;
     const channelRelation = await this.channelRelationRepository.findOne({
       where: { user, channel: { id: channelId } },
@@ -123,12 +121,12 @@ export class ChannelsService {
     }
   }
 
-  private transferOwnership(earliestOwnerRelation: ChannelRelation): void {
+  private async transferOwnership(earliestOwnerRelation: ChannelRelation): Promise<void> {
     earliestOwnerRelation.isOwner = true;
     this.channelRelationRepository.save(earliestOwnerRelation);
   }
 
-  async findChannelWithMembers(channelId: number) {
+  async findChannelWithMembers(channelId: number):Promise<Channel>  {
     const channel = await this.channelRepository.findOne({
       where: { id: channelId },
       relations: {
@@ -141,7 +139,7 @@ export class ChannelsService {
     return channel;
   }
 
-  async findAllChannelBannedUsers(channelId: number) {
+  async findAllChannelBannedUsers(channelId: number): Promise<User[]> {
     const bannedUsers = await this.channelRelationRepository.find({
       where: {
         channel: { id: channelId },
@@ -154,7 +152,7 @@ export class ChannelsService {
     // ChannelRelation entity를 User entity 형태로 리턴하기 위해 map 메소드 사용
   }
 
-  async banUser(channel: Channel, userId: number) {
+  async banUser(channel: Channel, userId: number): Promise<void> {
     const channelRelation = await this.channelRelationRepository.findOne({
       where: { channel, user: { id: userId } },
     });
@@ -178,7 +176,7 @@ export class ChannelsService {
     this.channelRelationRepository.save(channelRelation);
   }
 
-  async cancelBannedUser(channelId: number, userId: number) {
+  async cancelBannedUser(channelId: number, userId: number): Promise<void> {
     const channelRelation = await this.channelRelationRepository.findOne({
       where: {
         channel: {id: channelId},
@@ -194,7 +192,7 @@ export class ChannelsService {
     this.channelRelationRepository.remove(channelRelation);
   }
 
-  async kickUser(channelId: number, kickedUserId: number) {
+  async kickUser(channelId: number, kickedUserId: number): Promise<void> {
     const kickedUserRelation = await this.channelRelationRepository.findOne({
       where: { channel: {id: channelId}, user: { id: kickedUserId} },
     });
@@ -213,7 +211,7 @@ export class ChannelsService {
     this.channelRelationRepository.remove(kickedUserRelation);
   }
 
-  async updateAdmin(channelId: number, userId: number, updateData: {isAdmin: boolean}) {
+  async updateAdmin(channelId: number, userId: number, updateData: {isAdmin: boolean}): Promise<void> {
     const requestedUserRelation = await this.channelRelationRepository.findOne({
       where: {
         channel: {id: channelId},
@@ -234,7 +232,7 @@ export class ChannelsService {
     this.channelRelationRepository.save(requestedUserRelation);
   }
 
-  async changeOwner(channelId: number, currentOwnerId: number, successorId: number) {
+  async changeOwner(channelId: number, currentOwnerId: number, successorId: number): Promise<void> {
     // 현 소유자 찾기
     const currentOwnerRelation = await this.channelRelationRepository.findOneBy({
       channel: {id: channelId},
@@ -303,7 +301,7 @@ export class ChannelsService {
     return invitation;
 }
 
-  async join(user: User, channel: Channel, providedPassword?: string) {
+  async join(user: User, channel: Channel, providedPassword?: string): Promise<void> {
     const existingRelation = await this.channelRelationRepository.findOne({
       where: { channel, user },
     });
