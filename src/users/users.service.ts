@@ -29,8 +29,8 @@ export class UsersService {
     return this.userRepository.findOne(options);
   }
 
-  updateUser(user: User, updateUserDto: UpdateUserDto): void {
+  updateUser(user: User, updateUserDto: UpdateUserDto) {
     Object.assign(user, updateUserDto);
-    this.userRepository.save(user);
+    return this.userRepository.save(user);
   }
 }

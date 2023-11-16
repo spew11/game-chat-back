@@ -51,7 +51,7 @@ export class UsersController {
   }
 
   @Put('me')
-  updateUser(@GetUser() user: User, @Body() userDto: UpdateUserDto): void {
-    this.usersService.updateUser(user, userDto);
+  async updateUser(@GetUser() user: User, @Body() userDto: UpdateUserDto): Promise<void> {
+    await this.usersService.updateUser(user, userDto);
   }
 }
