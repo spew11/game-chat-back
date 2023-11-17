@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { UserRelation } from './user-relation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRelationStatusEnum } from 'src/user-relation/enums/user-relation-status.enum';
 import { CreateUserRelationDto } from './dtos/create-user-relation.dto';
 import { User } from 'src/users/user.entity';
+import { In } from 'typeorm';
 
 @Injectable()
 export class UserRelationService {
@@ -17,9 +18,9 @@ export class UserRelationService {
     const userSide = await this.findUserRelation(userId, otherUserId);
     const theOtherSide = await this.findUserRelation(otherUserId, userId);
     if (userSide?.status === UserRelationStatusEnum.FRIEND && theOtherSide?.status === UserRelationStatusEnum.FRIEND) {
-      this.userRelationRepository.remove([userSide, theOtherSide]);
+      await this.userRelationRepository.remove([userSide, theOtherSide]);
     } else {
-      throw new NotFoundException('잘못된 요청입니다.');
+      throw new BadRequestException('잘못된 요청입니다.');
     }
   }
 
@@ -30,22 +31,10 @@ export class UserRelationService {
       userSide?.status === UserRelationStatusEnum.PENDING_APPROVAL &&
       theOtherSide?.status === UserRelationStatusEnum.FRIEND_REQUEST
     ) {
-      this.userRelationRepository.remove([userSide, theOtherSide]);
+      await this.userRelationRepository.remove([userSide, theOtherSide]);
+    } else {
+      throw new BadRequestException('잘못된 요청입니다.');
     }
-  }
-
-  // user-otherUser 관계 객체 삭제
-  async removeUserRelation(userId: number, otherUserId: number): Promise<void> {
-    const relation = await this.userRelationRepository.findOne({
-      where: {
-        user: { id: userId },
-        otherUser: { id: otherUserId },
-      },
-    });
-    if (!relation) {
-      throw new NotFoundException('존재하지 않는 유저 관계입니다.');
-    }
-    this.userRelationRepository.remove(relation);
   }
 
   // user-otherUser 관계 객체 생성
@@ -89,21 +78,21 @@ export class UserRelationService {
     const recipientSide = await this.findUserRelation(recipient.id, requester.id);
     if (!requesterSide) {
       // user-otherUser 인스턴스 생성
-      const requesterDto = new CreateUserRelationDto();
-      requesterDto.user = requester;
-      requesterDto.otherUser = recipient;
-      requesterDto.status = UserRelationStatusEnum.FRIEND_REQUEST;
-      this.userRelationRepository.save(requesterDto);
+      await this.createUserRelation({
+        user: requester,
+        otherUser: recipient,
+        status: UserRelationStatusEnum.FRIEND_REQUEST,
+      });
       if (!recipientSide) {
         // otherUser-user 인스턴스 생성
-        const recipientDto = new CreateUserRelationDto();
-        recipientDto.user = recipient;
-        recipientDto.otherUser = requester;
-        recipientDto.status = UserRelationStatusEnum.PENDING_APPROVAL;
-        this.userRelationRepository.save(recipientDto);
+        await this.createUserRelation({
+          user: recipient,
+          otherUser: requester,
+          status: UserRelationStatusEnum.PENDING_APPROVAL,
+        });
       }
     } else {
-      throw new NotFoundException('잘못된 요청입니다.');
+      throw new BadRequestException('잘못된 요청입니다.');
     }
   }
 
@@ -113,14 +102,14 @@ export class UserRelationService {
     // 이미 userSide 관계가 존재한다면 status=block으로 변경
     if (userSide && userSide.status != UserRelationStatusEnum.BLOCKED) {
       userSide.status = UserRelationStatusEnum.BLOCKED;
-      this.userRelationRepository.save(userSide);
+      await this.userRelationRepository.save(userSide);
     } else {
       // userSide 관계가 존재하지 않는다면 차단 관계 생성
-      const createUserRelationDto: CreateUserRelationDto = new CreateUserRelationDto();
-      createUserRelationDto.user = user;
-      createUserRelationDto.otherUser = otherUser;
-      createUserRelationDto.status = UserRelationStatusEnum.BLOCKED;
-      this.createUserRelation(createUserRelationDto);
+      await this.createUserRelation({
+        user: user,
+        otherUser: otherUser,
+        status: UserRelationStatusEnum.BLOCKED,
+      });
     }
 
     // 상대방 입장에서의 관계가 존재하는데, 상대방이 친구요청이나 차단을 한경우가 아니면 삭제함
@@ -129,7 +118,7 @@ export class UserRelationService {
       theOtherSide?.status === UserRelationStatusEnum.FRIEND ||
       theOtherSide?.status === UserRelationStatusEnum.PENDING_APPROVAL
     ) {
-      this.userRelationRepository.remove(theOtherSide);
+      await this.userRelationRepository.remove(theOtherSide);
     }
   }
 
@@ -143,22 +132,25 @@ export class UserRelationService {
     ) {
       userSide.status = UserRelationStatusEnum.FRIEND;
       theOtherSide.status = UserRelationStatusEnum.FRIEND;
-      this.userRelationRepository.save([userSide, theOtherSide]);
+      await this.userRelationRepository.save([userSide, theOtherSide]);
     } else {
-      throw new NotFoundException('잘못된 요청입니다.');
+      throw new BadRequestException('잘못된 요청입니다.');
     }
   }
 
-  // user기준으로 친구인 유저리스트 반환
-  async findAllFriends(userId: number): Promise<User[]> {
-    const relations = await this.userRelationRepository.find({
+  // user기준으로 차단을 제외한 모든 종류의 친구관계 리스트 반환
+  async findAllFriendRelations(userId: number): Promise<UserRelation[]> {
+    return this.userRelationRepository.find({
       where: {
         user: { id: userId },
-        status: UserRelationStatusEnum.FRIEND,
+        status: In([
+          UserRelationStatusEnum.FRIEND,
+          UserRelationStatusEnum.FRIEND_REQUEST,
+          UserRelationStatusEnum.PENDING_APPROVAL,
+        ]),
       },
       relations: ['otherUser'],
     });
-    return relations.map((relation) => relation.otherUser);
   }
 
   // user기준으로 차단 유저리스트 반환
@@ -180,11 +172,12 @@ export class UserRelationService {
       if (theOtherSide?.status == UserRelationStatusEnum.FRIEND_REQUEST) {
         // 상대방이 나에게 친구요청을 했었다면, 친구수락펜딩으로 수정
         userSide.status = UserRelationStatusEnum.PENDING_APPROVAL;
+        await this.userRelationRepository.save(userSide);
       } else {
-        this.userRelationRepository.remove(userSide);
+        await this.userRelationRepository.remove(userSide);
       }
     } else {
-      throw new NotFoundException('잘못된 요청입니다.');
+      throw new BadRequestException('잘못된 요청입니다.');
     }
   }
 }
