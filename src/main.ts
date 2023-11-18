@@ -4,26 +4,17 @@ import { TestService } from './test.service';
 import cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
 import { sessionMiddleware } from '@configs/session.config';
-import { ValidationPipe } from '@nestjs/common';
-import { readFileSync } from 'fs';
-import { RedisService } from './commons/redis-client.service';
-import { corsConfig } from '@configs/cors.config';
 
 async function bootstrap() {
-  const httpsOptions = {
-    key: readFileSync(process.env.SSL_PATH + '/key.pem'),
-    cert: readFileSync(process.env.SSL_PATH + '/cert.pem'),
-  };
-
-  const app = await NestFactory.create(AppModule, { httpsOptions });
+  const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-  const redisService = app.get(RedisService);
 
-  app.enableCors(corsConfig);
+  app.use(cookieParser(), sessionMiddleware(configService));
 
-  app.use(sessionMiddleware(configService, redisService), cookieParser());
-  app.useGlobalPipes(new ValidationPipe());
-
+  app.enableCors({
+    origin: 'http://localhost:3000', // 요청을 보내는 클라이언트의 주소를 명시
+    credentials: true,
+  });
   // DB튜플 추가
   const testService = app.get(TestService);
   await testService.addUser();

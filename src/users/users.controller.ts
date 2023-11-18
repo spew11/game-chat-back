@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ShowUserOverviewDto } from './dto/show-user-overview.dto';
 import { ShowUserDetailsDto } from './dto/show-user-details.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDetailsDto } from './dto/update-user-details.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/user.decorator';
 import { User } from './user.entity';
@@ -28,17 +28,6 @@ export class UsersController {
     return userDtos;
   }
 
-  @Get('me')
-  getUserInfomation(@GetUser() user: User): ShowUserInforamtionDto {
-    const userDto = new ShowUserInforamtionDto();
-    userDto.avatar = user.avatar;
-    userDto.bio = user.bio;
-    userDto.email = user.email;
-    userDto.ladderPoint = user.ladderPoint;
-    userDto.nickname = user.nickname;
-    return userDto;
-  }
-
   @Get(':user_id')
   getUserDetails(@Param('user_id', UserByIdPipe) user: User): ShowUserDetailsDto {
     const userDto = new ShowUserDetailsDto();
@@ -50,8 +39,19 @@ export class UsersController {
     return userDto;
   }
 
+  @Get('me')
+  getUserInfomation(@GetUser() user: User): ShowUserInforamtionDto {
+    const userDto = new ShowUserInforamtionDto();
+    userDto.avatar = user.avatar;
+    userDto.bio = user.bio;
+    userDto.email = user.email;
+    userDto.ladderPoint = user.ladderPoint;
+    userDto.nickname = user.nickname;
+    return userDto;
+  }
+
   @Put('me')
-  async updateUser(@GetUser() user: User, @Body() userDto: UpdateUserDto): Promise<void> {
-    await this.usersService.updateUser(user, userDto);
+  updateUser(@GetUser() user: User, @Body() userDto: UpdateUserDetailsDto): void {
+    this.usersService.updateUser(user, userDto);
   }
 }

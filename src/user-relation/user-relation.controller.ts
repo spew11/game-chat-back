@@ -1,6 +1,6 @@
 import { Controller, Param, Post, Delete, Get, Put, UseGuards } from '@nestjs/common';
 import { UserRelationService } from './user-relation.service';
-import { ShowFriendRelationsDto } from './dtos/show-friend-relations.dto';
+import { ShowFriendsDto } from './dtos/show-friends.dto';
 import { ShowBlockedUsersDto } from './dtos/show-blocked-users.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/user.decorator';
@@ -8,21 +8,20 @@ import { User } from 'src/users/user.entity';
 import { UserByIdPipe } from 'src/pipes/UserById.pipe';
 
 @UseGuards(AuthGuard)
-@Controller('user-relation')
+@Controller('users-relation')
 export class UserRelationController {
   constructor(private userRelationService: UserRelationService) {}
 
   @Get('friends')
-  async getRelationList(@GetUser() user: User): Promise<ShowFriendRelationsDto[]> {
-    const relations = await this.userRelationService.findAllFriendRelations(user.id);
-    const showFriendRelationsDtos: ShowFriendRelationsDto[] = relations.map((relation) => {
-      const showFriendRelationsDto = new ShowFriendRelationsDto();
-      showFriendRelationsDto.otherUserId = relation.otherUser.id;
-      showFriendRelationsDto.nickname = relation.otherUser.nickname;
-      showFriendRelationsDto.status = relation.status;
-      return showFriendRelationsDto;
+  async getFriendsList(@GetUser() user: User): Promise<ShowFriendsDto[]> {
+    const friends = await this.userRelationService.findAllFriends(user.id);
+    const userDtos: ShowFriendsDto[] = friends.map((friend) => {
+      const userDto = new ShowFriendsDto();
+      userDto.otherUserId = friend.id;
+      userDto.nickname = friend.nickname;
+      return userDto;
     });
-    return showFriendRelationsDtos;
+    return userDtos;
   }
 
   @Post('friends/:user_id/request')
@@ -31,18 +30,20 @@ export class UserRelationController {
   }
 
   @Delete('friends/:user_id/disconnect')
-  async deleteFriend(@GetUser() user: User, @Param('user_id') otherUserId: number): Promise<void> {
-    await this.userRelationService.deleteFriendship(user.id, otherUserId);
+  async deleteFriend(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): Promise<void> {
+    this.userRelationService.removeUserRelation(user.id, otherUser.id);
+    this.userRelationService.removeUserRelation(otherUser.id, user.id);
   }
 
   @Put('friends/:user_id/accept')
-  async acceptFriend(@GetUser() user: User, @Param('user_id') otherUserId: number): Promise<void> {
-    await this.userRelationService.establishFriendship(user.id, otherUserId);
+  async acceptFriend(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): Promise<void> {
+    await this.userRelationService.establishFriendship(user.id, otherUser.id);
   }
 
   @Delete('friends/:user_id/reject')
-  async rejectUser(@GetUser() user: User, @Param('user_id') otherUserId: number): Promise<void> {
-    await this.userRelationService.rejectFriendship(user.id, otherUserId);
+  async rejectUser(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): Promise<void> {
+    this.userRelationService.removeUserRelation(user.id, otherUser.id);
+    this.userRelationService.removeUserRelation(otherUser.id, user.id);
   }
 
   @Post('block/:user_id')
@@ -51,8 +52,8 @@ export class UserRelationController {
   }
 
   @Delete('block/:user_id')
-  async unblockUser(@GetUser() user: User, @Param('user_id') otherUserId: number): Promise<void> {
-    await this.userRelationService.unblockUserRelation(user.id, otherUserId);
+  async unblockUser(@GetUser() user: User, @Param('user_id', UserByIdPipe) otherUser: User): Promise<void> {
+    this.userRelationService.removeUserRelation(user.id, otherUser.id);
   }
 
   @Get('block')

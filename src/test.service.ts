@@ -5,6 +5,7 @@ import { UsersService } from './users/users.service';
 import { User } from './users/user.entity';
 import { UserRelationStatusEnum } from './user-relation/enums/user-relation-status.enum';
 import { UserRelation } from './user-relation/user-relation.entity';
+import { UserRelationService } from './user-relation/user-relation.service';
 import { CreateUserRelationDto } from './user-relation/dtos/create-user-relation.dto';
 
 @Injectable()
@@ -15,6 +16,7 @@ export class TestService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(UserRelation)
     private readonly userRelationRepository: Repository<UserRelation>,
+    private readonly userRelationService: UserRelationService,
   ) {}
 
   async addUser(): Promise<void> {
@@ -32,8 +34,7 @@ export class TestService {
     ];
 
     for (const userData of users) {
-      if (!(await this.usersService.findByEmail(userData.email)))
-        await this.userRepository.save(userData);
+      await this.userRepository.save(userData);
     }
   }
 
@@ -91,13 +92,7 @@ export class TestService {
       status: UserRelationStatusEnum.PENDING_APPROVAL,
     });
     for (const userRelation of userRelations) {
-      if (
-        !(await this.userRelationRepository.findOneBy({
-          user: userRelation.user,
-          otherUser: userRelation.otherUser,
-        }))
-      )
-        await this.userRelationRepository.save(userRelation);
+      await this.userRelationRepository.save(userRelation);
     }
   }
 }
