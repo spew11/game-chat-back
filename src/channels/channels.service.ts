@@ -160,7 +160,7 @@ export class ChannelsService {
     }
 
     if (channelRelation.isOwner) {
-      throw new ForbiddenException('소유자나 ban될 수 없습니다!');
+      throw new ForbiddenException('소유자는 ban될 수 없습니다!');
     }
 
     if (channelRelation.isBanned) {
