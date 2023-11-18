@@ -32,9 +32,6 @@ export class ChannelsService {
     let hashedPassword = null;
 
     if (type === ChannelType.protected) {
-      if (!password || password.length < 4) {
-        throw new BadRequestException('protected 채널에는 최소 4자 이상의 비밀번호가 필요합니다!');
-      }
       hashedPassword = await this.hashPassword(password);
   } // protected 채널이 아니면 입력된 비밀번호를 무시
 
@@ -46,7 +43,7 @@ export class ChannelsService {
       channel,
       user: owner,
       isOwner: true,
-      isAdmin: false,
+      isAdmin: true,
     });
 
     await this.channelRelationRepository.save(channelRelation);
@@ -56,9 +53,6 @@ export class ChannelsService {
 
   async updateChannel(channel: Channel, channelDto: ChannelDto): Promise<Channel> {
     if (channelDto.type === ChannelType.protected) {
-      if (!channelDto.password || channelDto.password.length < 4) {
-        throw new BadRequestException('Protected한 채널에는 최소 4자 이상의 비밀번호가 필요합니다!');
-      }
       channelDto.password = await this.hashPassword(channelDto.password);
     } else {
       // protected 채널이 아니면
@@ -71,6 +65,9 @@ export class ChannelsService {
   }
 
   private async hashPassword(password: string): Promise<string> {
+    if (!password || password.length < 4) {
+      throw new BadRequestException('protected 채널에는 최소 4자 이상의 비밀번호가 필요합니다!');
+    }
     const salt = await bcrypt.genSalt();
     return bcrypt.hash(password, salt);
   }
@@ -259,6 +256,7 @@ export class ChannelsService {
 
     currentOwnerRelation.isOwner = false;
     successorRelation.isOwner = true;
+    successorRelation.isAdmin = true;
 
     this.channelRelationRepository.save([currentOwnerRelation, successorRelation]);
   }
