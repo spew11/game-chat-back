@@ -97,22 +97,6 @@ export class ChannelsController {
     return this.channelService.inviteUser(channel, invitedUser);
   }
 
-  @Post(':channel_id/accept-invite')
-  acceptInvitation(
-    @GetUser() user: User,
-    @Param('channel_id', ChannelByIdPipe) channel: Channel,
-  ): Promise<void> {
-    return this.channelService.acceptInvitation(user.id, channel.id);
-  }
-
-  @Post(':channel_id/refuse-invite')
-  refuseInvitation(
-    @GetUser() user: User,
-    @Param('channel_id', ChannelByIdPipe) channel: Channel,
-  ): Promise<void> {
-    return this.channelService.refuseInvitation(user.id, channel.id);
-  }
-
   @Post(':channel_id')
   join(
     @GetUser() user: User,
