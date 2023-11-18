@@ -6,7 +6,6 @@ import { UserRelationStatusEnum } from 'src/user-relation/enums/user-relation-st
 import { CreateUserRelationDto } from './dtos/create-user-relation.dto';
 import { User } from 'src/users/user.entity';
 import { In } from 'typeorm';
-import { request } from 'http';
 
 @Injectable()
 export class UserRelationService {
