@@ -89,28 +89,12 @@ export class ChannelsController {
     return this.channelService.changeOwner(channelId, owner.id, successorId);
   }
 
-  @Post(':channel_id/invite/:user_id')
+  @Post(':channel_id/invite/:user_id') // 뒤에 user_id 필요
   inviteUser(
     @Param('channel_id', ChannelByIdPipe) channel: Channel,
     @Param('user_id', UserByIdPipe) invitedUser: User,
     ): Promise<ChannelInvitation> {
     return this.channelService.inviteUser(channel, invitedUser);
-  }
-
-  @Post(':channel_id/accept-invite')
-  acceptInvitation(
-    @GetUser() user: User,
-    @Param('channel_id', ChannelByIdPipe) channel: Channel,
-  ) {
-    return this.channelService.acceptInvitation(user.id, channel.id);
-  }
-
-  @Post(':channel_id/refuse-invite')
-  refuseInvitation(
-    @GetUser() user: User,
-    @Param('channel_id', ChannelByIdPipe) channel: Channel,
-  ) {
-    return this.channelService.refuseInvitation(user.id, channel.id);
   }
 
   @Post(':channel_id')

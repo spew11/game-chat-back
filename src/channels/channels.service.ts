@@ -7,7 +7,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChannelDto } from './dto/channel.dto';
 import * as bcrypt from 'bcrypt';
-import { ChannelInvitation, InvitationStatus } from './entities/channel-invitation.entity';
+import { ChannelInvitation } from './entities/channel-invitation.entity';
 // import { ChatService } from './channels-chat.service';
 // import { ChatGateway } from './channels.gateway';
 
@@ -264,11 +264,6 @@ export class ChannelsService {
   }
 
   async inviteUser(channel: Channel, invitedUser: User): Promise<ChannelInvitation> {
-
-    if (channel.type !== ChannelType.private) {
-      throw new BadRequestException('private 채널에서만 초대가 허용됩니다!');
-    }
-
     const userRelation = await this.channelRelationRepository.findOne({
         where: { channel, user: invitedUser },
     });
@@ -282,57 +277,30 @@ export class ChannelsService {
         throw new BadRequestException('유저가 이미 채널의 멤버입니다!');
     }
 
-    // 이미 초대되었는지 확인
-    let existingInvitation = await this.channelInvitationRepository.findOne({
-      where: { channel, user: invitedUser },
+    const existingInvitation = await this.channelInvitationRepository.findOne({
+        where: { channel, user: invitedUser },
     });
 
-    if (existingInvitation && existingInvitation.status === InvitationStatus.Refused) {
-      existingInvitation = this.channelInvitationRepository.merge(existingInvitation, { status: InvitationStatus.Waiting });
-      await this.channelInvitationRepository.save(existingInvitation);
-      return existingInvitation;
+    if (existingInvitation) {
+        throw new NotFoundException('유저가 채널에 이미 초대되었습니다!');
     }
-    // 유저가 이전에 초대되었지만 refuse했던 경우 status를 waiting으로 수정
 
-    if (!existingInvitation || existingInvitation.status === InvitationStatus.Accepted) {
-      const newInvitation = this.channelInvitationRepository.create({
-          channel,
-          user: invitedUser,
-          status: InvitationStatus.Waiting
-      });
-      return await this.channelInvitationRepository.save(newInvitation);
-    }
-    // 존재하는 초대가 없거나 이전에 초대를 수락했으면 초대 기록 남기기
+    // 초대 기록 남기기
+    const invitation = this.channelInvitationRepository.create({
+        channel,
+        user: invitedUser,
+    });
+    await this.channelInvitationRepository.save(invitation);
 
-    throw new NotFoundException('유저가 채널에 이미 초대되었습니다!');
-    // 유저가 수락 거절 반응을 기다리고 있을 때 나오는 메시지
+    // 초대된 유저를 채널 안에 입장시키기
+    const newRelation = this.channelRelationRepository.create({
+        channel,
+        user: invitedUser,
+    });
+    await this.channelRelationRepository.save(newRelation);
+
+    return invitation;
 }
-
-  async acceptInvitation(userId: number, channelId: number): Promise<void> {
-    const invitation = await this.channelInvitationRepository.findOne({
-        where: { user: { id: userId }, channel: { id: channelId } }
-    });
-
-    if (!invitation) {
-        throw new NotFoundException('Invitation이 없습니다!');
-    }
-
-    invitation.status = InvitationStatus.Accepted;
-    await this.channelInvitationRepository.save(invitation);
-  }
-
-  async refuseInvitation(userId: number, channelId: number): Promise<void> {
-    const invitation = await this.channelInvitationRepository.findOne({
-        where: { user: { id: userId }, channel: { id: channelId } }
-    });
-
-    if (!invitation) {
-        throw new NotFoundException('Invitation이 없습니다!');
-    }
-
-    invitation.status = InvitationStatus.Refused;
-    await this.channelInvitationRepository.save(invitation);
-  }
 
   async join(user: User, channel: Channel, providedPassword?: string): Promise<void> {
     const existingRelation = await this.channelRelationRepository.findOne({
@@ -352,15 +320,7 @@ export class ChannelsService {
         user,
       });
       if (!channelInvitation) {
-        throw new BadRequestException('비밀 채널입니다 또는 초대가 없습니다!');
-      }
-
-      if (channelInvitation.status === InvitationStatus.Refused) {
-          throw new ForbiddenException('초대를 거부한 채널에는 입장할 수 없습니다!');
-      }
-
-      if (channelInvitation.status !== InvitationStatus.Accepted) {
-          throw new BadRequestException('초대를 수락하지 않았습니다!');
+        throw new BadRequestException('비밀 채널입니다!');
       }
     } else if (channel.type === ChannelType.protected) {
       if (!providedPassword) {
