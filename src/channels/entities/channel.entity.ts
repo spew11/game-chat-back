@@ -19,7 +19,6 @@ export class Channel {
   title: string;
 
   @Column({ nullable: true })
-  @MinLength(4)
   password: string;
 
   @Column({

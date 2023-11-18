@@ -89,7 +89,7 @@ export class ChannelsController {
     return this.channelService.changeOwner(channelId, owner.id, successorId);
   }
 
-  @Post(':channel_id/invite/:user_id') // 뒤에 user_id 필요
+  @Post(':channel_id/invite/:user_id')
   inviteUser(
     @Param('channel_id', ChannelByIdPipe) channel: Channel,
     @Param('user_id', UserByIdPipe) invitedUser: User,
