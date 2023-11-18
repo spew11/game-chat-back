@@ -32,8 +32,8 @@ export class ChannelsService {
     let hashedPassword = null;
 
     if (type === ChannelType.protected) {
-      if (!password) {
-          throw new BadRequestException('protected 채널에는 패스워드가 필요합니다!');
+      if (!password || password.length < 4) {
+        throw new BadRequestException('protected 채널에는 최소 4자 이상의 비밀번호가 필요합니다!');
       }
       hashedPassword = await this.hashPassword(password);
   } // protected 채널이 아니면 입력된 비밀번호를 무시
@@ -46,7 +46,7 @@ export class ChannelsService {
       channel,
       user: owner,
       isOwner: true,
-      isAdmin: true,
+      isAdmin: false,
     });
 
     await this.channelRelationRepository.save(channelRelation);
@@ -55,16 +55,14 @@ export class ChannelsService {
 }
 
   async updateChannel(channel: Channel, channelDto: ChannelDto): Promise<Channel> {
-    if (channelDto.type === ChannelType.protected && channelDto.password) {
-        channelDto.password = await this.hashPassword(channelDto.password);
-        // protected한 채널로 업데이트하고 비밀번호가 있다면
-    } else if (channelDto.type === ChannelType.protected && !channel.password) {
-        throw new BadRequestException('Protected한 채널에는 비밀번호가 필요합니다!');
-    }
-
-    // protected한 채널로 업데이트하는 게 아니라면 비밀번호 제거
-    if (channelDto.type && channelDto.type !== ChannelType.protected) {
-        channelDto.password = null;
+    if (channelDto.type === ChannelType.protected) {
+      if (!channelDto.password || channelDto.password.length < 4) {
+        throw new BadRequestException('Protected한 채널에는 최소 4자 이상의 비밀번호가 필요합니다!');
+      }
+      channelDto.password = await this.hashPassword(channelDto.password);
+    } else {
+      // protected 채널이 아니면
+      channelDto.password = null;
     }
 
     Object.assign(channel, channelDto);
@@ -161,8 +159,8 @@ export class ChannelsService {
       throw new NotFoundException('채널에 유저가 없습니다!');
     }
 
-    if (channelRelation.isAdmin || channelRelation.isOwner) {
-      throw new ForbiddenException('소유자나 관리자는 ban될 수 없습니다!');
+    if (channelRelation.isOwner) {
+      throw new ForbiddenException('소유자나 ban될 수 없습니다!');
     }
 
     if (channelRelation.isBanned) {
@@ -202,8 +200,8 @@ export class ChannelsService {
       throw new NotFoundException('해당 채널의 멤버가 아닙니다!');
     }
 
-    if (kickedUserRelation.isOwner || kickedUserRelation.isAdmin) {
-      throw new ForbiddenException('소유자와 관리자는 kick될 수 없습니다!');
+    if (kickedUserRelation.isOwner) {
+      throw new ForbiddenException('소유자는 kick될 수 없습니다!');
     }
 
     // kick 실시간 소켓 처리
@@ -233,6 +231,10 @@ export class ChannelsService {
   }
 
   async changeOwner(channelId: number, currentOwnerId: number, successorId: number): Promise<void> {
+
+    if (currentOwnerId === successorId) {
+      return; // owner가 자신에게 소유권을 부여할 시
+    }
     // 현 소유자 찾기
     const currentOwnerRelation = await this.channelRelationRepository.findOneBy({
       channel: {id: channelId},
@@ -257,7 +259,6 @@ export class ChannelsService {
 
     currentOwnerRelation.isOwner = false;
     successorRelation.isOwner = true;
-    successorRelation.isAdmin = true;
 
     this.channelRelationRepository.save([currentOwnerRelation, successorRelation]);
   }
