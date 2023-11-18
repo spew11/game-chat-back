@@ -43,7 +43,7 @@ export class ChannelsService {
       channel,
       user: owner,
       isOwner: true,
-      isAdmin: false,
+      isAdmin: true,
     });
 
     await this.channelRelationRepository.save(channelRelation);
@@ -256,6 +256,7 @@ export class ChannelsService {
 
     currentOwnerRelation.isOwner = false;
     successorRelation.isOwner = true;
+    successorRelation.isAdmin = true;
 
     this.channelRelationRepository.save([currentOwnerRelation, successorRelation]);
   }
