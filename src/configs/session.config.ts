@@ -1,33 +1,32 @@
 import { ConfigService } from '@nestjs/config';
-
-const session = require('express-session');
-const RedisStore = require('connect-redis').default;
-const redis = require('redis');
-
-const redisClient = redis.createClient({
-  host: 'redis',
-  port: 6379,
-});
+import session, { Session } from 'express-session';
+import RedisStore from 'connect-redis';
+import { RedisService } from 'src/commons/redis-client.service';
 
 declare module 'express-session' {
   interface SessionData {
-    email: string;
+    userId: number;
+  }
+}
+declare module 'http' {
+  interface IncomingMessage {
+    session: Session & Partial<session.SessionData>;
   }
 }
 
-export function sessionMiddleware(configService: ConfigService) {
+export function sessionMiddleware(configService: ConfigService, redisService: RedisService) {
   return session({
     secret: configService.get<string>('SESSION_SECRET'),
-    resave: true, // 세션 갱신
-    saveUninitialized: false, // 로그인한 사용자에게만 세션 ID할당하기
-    store: new RedisStore({ client: redisClient }),
+    resave: false, // resave: 사용자의 api호출시 마다 session기한을 연장하는 설정.
+    saveUninitialized: false, // saveUninitialized 로그인한 사용자에게만 세션ID을 할당하는 설정.
     cookie: {
+      path: '/',
       maxAge: 30 * 60 * 1000,
-      httpOnly: true,
-      // sameSite: 'strict',
+      httpOnly: false,
+      sameSite: 'none',
+      secure: true,
     },
-    name: 'session-cookie',
+    store: new RedisStore({ client: redisService.client, prefix: 'session:' }), // prefix: session key에 접두사를 붙여서 구별하기 용이하게 하는 역할
+    name: 'session-cookie', // name: 세션 쿠키 이름 (ex. Set-Cookie: session-cookie=encoded sessionID)
   });
 }
-
-export { redisClient };

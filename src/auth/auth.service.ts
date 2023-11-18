@@ -1,9 +1,8 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Request } from 'express';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
-import { redisClient } from '@configs/session.config';
 import { User } from 'src/users/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
@@ -25,22 +24,22 @@ export class AuthService {
       .slice(0, length);
   }
 
-  getRedirectUrl(state: string): string {
+  getRedirectUrl(state: string, callbackUri: string): string {
     const authorizationUrl =
       `${this.AUTHORIZATION_URI}?` +
       `client_id=${this.configService.get<string>('CLIENT_ID')}&` +
-      `redirect_uri=${this.configService.get<string>('CALLBACK_URI')}&` +
+      `redirect_uri=${callbackUri}&` +
       `response_type=code&scope=public&state=${state}`;
     return authorizationUrl;
   }
 
-  async getAccessToken(state: string, code: string): Promise<string> {
+  async getAccessToken(state: string, code: string, callbackUri: string): Promise<string> {
     const data = {
       grant_type: 'authorization_code',
       client_id: this.configService.get<string>('CLIENT_ID'),
       client_secret: this.configService.get<string>('CLIENT_SECRET'),
       code: code,
-      redirect_uri: this.configService.get<string>('CALLBACK_URI'),
+      redirect_uri: callbackUri,
       state: state,
     };
     const response = await axios.post(this.TOKEN_URL, data);
@@ -57,20 +56,26 @@ export class AuthService {
   }
 
   async loginUser(req: Request, user: User): Promise<void> {
-    const sessionId = await redisClient.hget(`user:${user.id}`, user.email);
-    if (sessionId) {
-      throw new UnauthorizedException('이미 다른 기기에서 로그인되었습니다.');
+    if (user) {
+      // const sessionData = await redisClient.hget(`hash:${user.id}`.toString(), 'email');
+      // if (sessionData) {
+      // throw new ConflictException('이미 다른 기기에서 로그인되었습니다.');
+      // }
+      // await redisClient.hset(`user:${user.id}`.toString(), { email: user.email });
+      req.session.userId = user.id;
+      if (req?.session.userId) {
+        console.log(`***express session 저장 성공!: ${req.session.userId} ***`);
+      }
+    } else {
+      throw new NotFoundException('존재하지 않는 유저입니다.');
     }
-    req.session.email = user.email;
-    await redisClient.set(`user:${user.id}`, user.email);
   }
 
-  async joinUser(req: Request, createUserDto: CreateUserDto): Promise<void> {
-    const user = await this.usersService.findByEmail(createUserDto.email);
-    if (user) {
-      throw new ConflictException('이미 가입된 유저입니다.');
+  async joinUser(userEmail: string, createUserDto: CreateUserDto): Promise<User> {
+    const existUser = await this.usersService.findByEmail(userEmail);
+    if (existUser) {
+      throw new BadRequestException('이미 가입된 유저입니다.');
     }
-    this.usersService.createUser(createUserDto);
-    this.loginUser(req, user);
+    return this.usersService.createUser(userEmail, createUserDto);
   }
 }
