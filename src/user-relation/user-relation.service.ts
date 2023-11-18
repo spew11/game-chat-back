@@ -17,7 +17,10 @@ export class UserRelationService {
   async deleteFriendship(userId: number, otherUserId: number): Promise<void> {
     const userSide = await this.findUserRelation(userId, otherUserId);
     const theOtherSide = await this.findUserRelation(otherUserId, userId);
-    if (userSide?.status === UserRelationStatusEnum.FRIEND && theOtherSide?.status === UserRelationStatusEnum.FRIEND) {
+    if (
+      userSide?.status === UserRelationStatusEnum.FRIEND &&
+      theOtherSide?.status === UserRelationStatusEnum.FRIEND
+    ) {
       await this.userRelationRepository.remove([userSide, theOtherSide]);
     } else {
       throw new BadRequestException('잘못된 요청입니다.');
@@ -56,7 +59,10 @@ export class UserRelationService {
   async isFriendRelation(userId: number, otherUserId: number): Promise<boolean> {
     const userSide = await this.findUserRelation(userId, otherUserId);
     const theOtherSide = await this.findUserRelation(otherUserId, userId);
-    if (userSide?.status === UserRelationStatusEnum.FRIEND && theOtherSide?.status === UserRelationStatusEnum.FRIEND) {
+    if (
+      userSide?.status === UserRelationStatusEnum.FRIEND &&
+      theOtherSide?.status === UserRelationStatusEnum.FRIEND
+    ) {
       return true;
     }
     return false;
@@ -159,6 +165,17 @@ export class UserRelationService {
       where: {
         user: { id: userId },
         status: UserRelationStatusEnum.BLOCKED,
+      },
+      relations: ['otherUser'],
+    });
+    return relations.map((relation) => relation.otherUser);
+  }
+
+  async findFriendRequests(userId: number): Promise<User[]> {
+    const relations = await this.userRelationRepository.find({
+      where: {
+        user: { id: userId },
+        status: UserRelationStatusEnum.FRIEND_REQUEST,
       },
       relations: ['otherUser'],
     });
