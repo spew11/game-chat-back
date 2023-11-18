@@ -171,7 +171,7 @@ export class UserRelationService {
     return relations.map((relation) => relation.otherUser);
   }
 
-  async findFriendRequests(userId: number): Promise<User[]> {
+  async findAllFriendRequests(userId: number): Promise<User[]> {
     const relations = await this.userRelationRepository.find({
       where: {
         user: { id: userId },
