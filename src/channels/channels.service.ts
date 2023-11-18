@@ -7,7 +7,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChannelDto } from './dto/channel.dto';
 import * as bcrypt from 'bcrypt';
-import { ChannelInvitation } from './entities/channel-invitation.entity';
+import { ChannelInvitation, InvitationStatus } from './entities/channel-invitation.entity';
 // import { ChatService } from './channels-chat.service';
 // import { ChatGateway } from './channels.gateway';
 
@@ -32,8 +32,8 @@ export class ChannelsService {
     let hashedPassword = null;
 
     if (type === ChannelType.protected) {
-      if (!password) {
-          throw new BadRequestException('protected 채널에는 패스워드가 필요합니다!');
+      if (!password || password.length < 4) {
+        throw new BadRequestException('protected 채널에는 최소 4자 이상의 비밀번호가 필요합니다!');
       }
       hashedPassword = await this.hashPassword(password);
   } // protected 채널이 아니면 입력된 비밀번호를 무시
@@ -46,7 +46,7 @@ export class ChannelsService {
       channel,
       user: owner,
       isOwner: true,
-      isAdmin: true,
+      isAdmin: false,
     });
 
     await this.channelRelationRepository.save(channelRelation);
@@ -55,16 +55,14 @@ export class ChannelsService {
 }
 
   async updateChannel(channel: Channel, channelDto: ChannelDto): Promise<Channel> {
-    if (channelDto.type === ChannelType.protected && channelDto.password) {
-        channelDto.password = await this.hashPassword(channelDto.password);
-        // protected한 채널로 업데이트하고 비밀번호가 있다면
-    } else if (channelDto.type === ChannelType.protected && !channel.password) {
-        throw new BadRequestException('Protected한 채널에는 비밀번호가 필요합니다!');
-    }
-
-    // protected한 채널로 업데이트하는 게 아니라면 비밀번호 제거
-    if (channelDto.type && channelDto.type !== ChannelType.protected) {
-        channelDto.password = null;
+    if (channelDto.type === ChannelType.protected) {
+      if (!channelDto.password || channelDto.password.length < 4) {
+        throw new BadRequestException('Protected한 채널에는 최소 4자 이상의 비밀번호가 필요합니다!');
+      }
+      channelDto.password = await this.hashPassword(channelDto.password);
+    } else {
+      // protected 채널이 아니면
+      channelDto.password = null;
     }
 
     Object.assign(channel, channelDto);
@@ -161,8 +159,8 @@ export class ChannelsService {
       throw new NotFoundException('채널에 유저가 없습니다!');
     }
 
-    if (channelRelation.isAdmin || channelRelation.isOwner) {
-      throw new ForbiddenException('소유자나 관리자는 ban될 수 없습니다!');
+    if (channelRelation.isOwner) {
+      throw new ForbiddenException('소유자는 ban될 수 없습니다!');
     }
 
     if (channelRelation.isBanned) {
@@ -202,8 +200,8 @@ export class ChannelsService {
       throw new NotFoundException('해당 채널의 멤버가 아닙니다!');
     }
 
-    if (kickedUserRelation.isOwner || kickedUserRelation.isAdmin) {
-      throw new ForbiddenException('소유자와 관리자는 kick될 수 없습니다!');
+    if (kickedUserRelation.isOwner) {
+      throw new ForbiddenException('소유자는 kick될 수 없습니다!');
     }
 
     // kick 실시간 소켓 처리
@@ -233,6 +231,10 @@ export class ChannelsService {
   }
 
   async changeOwner(channelId: number, currentOwnerId: number, successorId: number): Promise<void> {
+
+    if (currentOwnerId === successorId) {
+      return; // owner가 자신에게 소유권을 부여할 시
+    }
     // 현 소유자 찾기
     const currentOwnerRelation = await this.channelRelationRepository.findOneBy({
       channel: {id: channelId},
@@ -257,12 +259,16 @@ export class ChannelsService {
 
     currentOwnerRelation.isOwner = false;
     successorRelation.isOwner = true;
-    successorRelation.isAdmin = true;
 
     this.channelRelationRepository.save([currentOwnerRelation, successorRelation]);
   }
 
   async inviteUser(channel: Channel, invitedUser: User): Promise<ChannelInvitation> {
+
+    if (channel.type !== ChannelType.private) {
+      throw new BadRequestException('private 채널에서만 초대가 허용됩니다!');
+    }
+
     const userRelation = await this.channelRelationRepository.findOne({
         where: { channel, user: invitedUser },
     });
@@ -276,30 +282,57 @@ export class ChannelsService {
         throw new BadRequestException('유저가 이미 채널의 멤버입니다!');
     }
 
-    const existingInvitation = await this.channelInvitationRepository.findOne({
-        where: { channel, user: invitedUser },
+    // 이미 초대되었는지 확인
+    let existingInvitation = await this.channelInvitationRepository.findOne({
+      where: { channel, user: invitedUser },
     });
 
-    if (existingInvitation) {
-        throw new NotFoundException('유저가 채널에 이미 초대되었습니다!');
+    if (existingInvitation && existingInvitation.status === InvitationStatus.Refused) {
+      existingInvitation = this.channelInvitationRepository.merge(existingInvitation, { status: InvitationStatus.Waiting });
+      await this.channelInvitationRepository.save(existingInvitation);
+      return existingInvitation;
+    }
+    // 유저가 이전에 초대되었지만 refuse했던 경우 status를 waiting으로 수정
+
+    if (!existingInvitation || existingInvitation.status === InvitationStatus.Accepted) {
+      const newInvitation = this.channelInvitationRepository.create({
+          channel,
+          user: invitedUser,
+          status: InvitationStatus.Waiting
+      });
+      return await this.channelInvitationRepository.save(newInvitation);
+    }
+    // 존재하는 초대가 없거나 이전에 초대를 수락했으면 초대 기록 남기기
+
+    throw new NotFoundException('유저가 채널에 이미 초대되었습니다!');
+    // 유저가 수락 거절 반응을 기다리고 있을 때 나오는 메시지
+}
+
+  async acceptInvitation(userId: number, channelId: number): Promise<void> {
+    const invitation = await this.channelInvitationRepository.findOne({
+        where: { user: { id: userId }, channel: { id: channelId } }
+    });
+
+    if (!invitation) {
+        throw new NotFoundException('Invitation이 없습니다!');
     }
 
-    // 초대 기록 남기기
-    const invitation = this.channelInvitationRepository.create({
-        channel,
-        user: invitedUser,
-    });
+    invitation.status = InvitationStatus.Accepted;
     await this.channelInvitationRepository.save(invitation);
+  }
 
-    // 초대된 유저를 채널 안에 입장시키기
-    const newRelation = this.channelRelationRepository.create({
-        channel,
-        user: invitedUser,
+  async refuseInvitation(userId: number, channelId: number): Promise<void> {
+    const invitation = await this.channelInvitationRepository.findOne({
+        where: { user: { id: userId }, channel: { id: channelId } }
     });
-    await this.channelRelationRepository.save(newRelation);
 
-    return invitation;
-}
+    if (!invitation) {
+        throw new NotFoundException('Invitation이 없습니다!');
+    }
+
+    invitation.status = InvitationStatus.Refused;
+    await this.channelInvitationRepository.save(invitation);
+  }
 
   async join(user: User, channel: Channel, providedPassword?: string): Promise<void> {
     const existingRelation = await this.channelRelationRepository.findOne({
@@ -319,7 +352,15 @@ export class ChannelsService {
         user,
       });
       if (!channelInvitation) {
-        throw new BadRequestException('비밀 채널입니다!');
+        throw new BadRequestException('비밀 채널입니다 또는 초대가 없습니다!');
+      }
+
+      if (channelInvitation.status === InvitationStatus.Refused) {
+          throw new ForbiddenException('초대를 거부한 채널에는 입장할 수 없습니다!');
+      }
+
+      if (channelInvitation.status !== InvitationStatus.Accepted) {
+          throw new BadRequestException('초대를 수락하지 않았습니다!');
       }
     } else if (channel.type === ChannelType.protected) {
       if (!providedPassword) {
