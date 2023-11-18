@@ -4,6 +4,7 @@ import { ChannelType } from '../entities/channel.entity';
 export class ChannelDto {
   @IsString()
   @MaxLength(20)
+  @IsNotEmpty()
   title: string;
 
   @IsString()
