@@ -19,14 +19,14 @@ export class ChannelRelation {
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ default: false })
-  isMuted: boolean;
+  // @Column({ default: false })
+  // isMuted: boolean;
 
-  @Column({ default: 5 })
-  mutedTime: number;
+  // @Column({ default: 5 })
+  // mutedTime: number;
 
-  @CreateDateColumn()
-  muteCreatedAt: Date;
+  // @CreateDateColumn()
+  // muteCreatedAt: Date;
 
   @ManyToOne(() => User, (user) => user.channelRelations, {
     onDelete: 'CASCADE',
