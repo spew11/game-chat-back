@@ -279,7 +279,6 @@ export class ChannelsService {
   }
 
   async inviteUser(channel: Channel, invitedUser: User): Promise<ChannelInvitation> {
-
     if (channel.type !== ChannelType.private) {
       throw new BadRequestException('private 채널에서만 초대가 허용됩니다!');
     }
@@ -325,15 +324,26 @@ export class ChannelsService {
 
   async acceptInvitation(userId: number, channelId: number): Promise<void> {
     const invitation = await this.channelInvitationRepository.findOne({
-        where: { user: { id: userId }, channel: { id: channelId } }
+      where: {
+        user: { id: userId },
+        channel: { id: channelId },
+        status: InvitationStatus.Waiting
+      },
+      relations: ['user', 'channel']
     });
 
     if (!invitation) {
-        throw new NotFoundException('Invitation이 없습니다!');
+      throw new NotFoundException('Invitation이 없거나 이미 응답했습니다!');
     }
 
     invitation.status = InvitationStatus.Accepted;
     await this.channelInvitationRepository.save(invitation);
+
+    const user = invitation.user;
+    const channel = invitation.channel;
+
+    await this.join(user, channel, null);
+    // 유저가 초대를 수락하면 채널에 자동 입장시키기
   }
 
   async refuseInvitation(userId: number, channelId: number): Promise<void> {
