@@ -83,6 +83,19 @@ export class ChannelsService {
     return channel;
   }
 
+  async findOneChannelWithUsers(channelId: number): Promise<Channel> {
+    const channelWithUsers = await this.channelRepository.findOne({
+        where: { id: channelId },
+        relations: ['channelRelations', 'channelRelations.user'],
+    });
+
+    if (!channelWithUsers) {
+      throw new NotFoundException('채널을 찾을 수 없습니다!');
+    }
+
+    return channelWithUsers;
+}
+
   async exitChannel(user: User, channelId: number): Promise<void> {
     let ifTranferNeeded = false;
     const channelRelation = await this.channelRelationRepository.findOne({
@@ -147,28 +160,35 @@ export class ChannelsService {
     // ChannelRelation entity를 User entity 형태로 리턴하기 위해 map 메소드 사용
   }
 
-  async banUser(channel: Channel, userId: number): Promise<void> {
-    const channelRelation = await this.channelRelationRepository.findOne({
-      where: { channel, user: { id: userId } },
+  async banUser(channelId: number, bannedUserId: number, actingUserId: number): Promise<void> {
+    const bannedUserRelation = await this.channelRelationRepository.findOne({
+      where: { channel: { id: channelId }, user: { id: bannedUserId } },
     });
 
-    if (!channelRelation) {
+    if (!bannedUserRelation) {
       throw new NotFoundException('채널에 유저가 없습니다!');
     }
 
-    if (channelRelation.isOwner) {
-      throw new ForbiddenException('소유자는 ban될 수 없습니다!');
-    }
-
-    if (channelRelation.isBanned) {
+    if (bannedUserRelation.isBanned) {
       throw new ForbiddenException('이미 ban된 유저입니다!');
     }
 
-    // this.chatGateway.kickMember(channel.id, userId);
-    // ban 전에 kick 처리
+    const actingUserRelation = await this.channelRelationRepository.findOne({
+      where: { channel: { id: channelId }, user: { id: actingUserId } },
+    });
 
-    channelRelation.isBanned = true;
-    this.channelRelationRepository.save(channelRelation);
+    if (!actingUserRelation) {
+      throw new NotFoundException('ban하려는 주체는 채널의 멤버가 아닙니다!');
+    }
+
+    if (actingUserRelation.isOwner || (actingUserRelation.isAdmin && !bannedUserRelation.isAdmin && !bannedUserRelation.isOwner)) {
+      // this.chatGateway.kickMember(channel.id, userId);
+      // ban 전에 kick 처리
+      bannedUserRelation.isBanned = true;
+      await this.channelRelationRepository.save(bannedUserRelation);
+    } else {
+      throw new ForbiddenException('관리자는 다른 관리자나 소유자를 ban할 수 없습니다!');
+    }
   }
 
   async cancelBannedUser(channelId: number, userId: number): Promise<void> {
@@ -187,7 +207,7 @@ export class ChannelsService {
     this.channelRelationRepository.remove(channelRelation);
   }
 
-  async kickUser(channelId: number, kickedUserId: number): Promise<void> {
+  async kickUser(channelId: number, kickedUserId: number, actingUserId: number): Promise<void> {
     const kickedUserRelation = await this.channelRelationRepository.findOne({
       where: { channel: {id: channelId}, user: { id: kickedUserId} },
     });
@@ -197,13 +217,23 @@ export class ChannelsService {
       throw new NotFoundException('해당 채널의 멤버가 아닙니다!');
     }
 
-    if (kickedUserRelation.isOwner) {
-      throw new ForbiddenException('소유자는 kick될 수 없습니다!');
+    const actingUserRelation = await this.channelRelationRepository.findOne({
+      where: { channel: {id: channelId}, user: { id: actingUserId} },
+    });
+    // kick하려는 주체가 누군지 찾기
+
+    if (!actingUserRelation) {
+      throw new NotFoundException('kick하려는 주체는 채널의 멤버가 아닙니다!');
     }
 
-    // kick 실시간 소켓 처리
-    // this.chatGateway.kickMember(channelId, kickedUserId);
-    this.channelRelationRepository.remove(kickedUserRelation);
+    // 소유자만 관리자를 kick할 수 있고 관리자는 유저만 kick할 수 있다
+    if (actingUserRelation.isOwner || (actingUserRelation.isAdmin && !kickedUserRelation.isAdmin && !kickedUserRelation.isOwner)) {
+      // kick 실시간 소켓 처리
+      // this.chatGateway.kickMember(channelId, kickedUserId);
+      await this.channelRelationRepository.remove(kickedUserRelation);
+    } else {
+      throw new ForbiddenException('관리자는 다른 관리자나 소유자를 kick할 수 없습니다!');
+    }
   }
 
   async updateAdmin(channelId: number, userId: number, updateData: {isAdmin: boolean}): Promise<void> {
@@ -216,7 +246,7 @@ export class ChannelsService {
     });
 
     if (!requestedUserRelation) {
-      throw new NotFoundException(`채널과 유저가 없습니다!}.`);
+      throw new NotFoundException('채널과 유저가 없습니다!');
     }
 
     if (requestedUserRelation.isOwner) {
@@ -262,7 +292,6 @@ export class ChannelsService {
   }
 
   async inviteUser(channel: Channel, invitedUser: User): Promise<ChannelInvitation> {
-
     if (channel.type !== ChannelType.private) {
       throw new BadRequestException('private 채널에서만 초대가 허용됩니다!');
     }
@@ -308,15 +337,26 @@ export class ChannelsService {
 
   async acceptInvitation(userId: number, channelId: number): Promise<void> {
     const invitation = await this.channelInvitationRepository.findOne({
-        where: { user: { id: userId }, channel: { id: channelId } }
+      where: {
+        user: { id: userId },
+        channel: { id: channelId },
+        status: InvitationStatus.Waiting
+      },
+      relations: ['user', 'channel']
     });
 
     if (!invitation) {
-        throw new NotFoundException('Invitation이 없습니다!');
+      throw new NotFoundException('Invitation이 없거나 이미 응답했습니다!');
     }
 
     invitation.status = InvitationStatus.Accepted;
     await this.channelInvitationRepository.save(invitation);
+
+    const user = invitation.user;
+    const channel = invitation.channel;
+
+    await this.join(user, channel, null);
+    // 유저가 초대를 수락하면 채널에 자동 입장시키기
   }
 
   async refuseInvitation(userId: number, channelId: number): Promise<void> {
@@ -395,6 +435,20 @@ export class ChannelsService {
         channel: { id: channelId },
         user: { id: userId }
       }
+    });
+  }
+
+  async findChannelsByUser(userId: number): Promise<any[]> {
+    const channelRelations = await this.channelRelationRepository.find({
+      where: { user: { id: userId } },
+      relations: ['channel'],
+    });
+
+    return channelRelations.map(relation => {
+      return {
+        channel: relation.channel,
+        role: relation.isOwner ? 'Owner' : relation.isAdmin ? 'Admin' : 'User'
+      };
     });
   }
 

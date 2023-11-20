@@ -1,5 +1,5 @@
 import { ChannelByIdPipe } from './../pipes/ChannelById.Pipe';
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, UseGuards } from '@nestjs/common';
 import { ChannelsService } from './channels.service';
 import { GetUser } from 'src/auth/user.decorator';
 import { User } from 'src/users/user.entity';
@@ -20,6 +20,11 @@ export class ChannelsController {
     return this.channelService.createChannel(user, channelDto);
   }
 
+  @Get('me')
+  getChannelsByUser(@GetUser() user: User): Promise<any[]> {
+    return this.channelService.findChannelsByUser(user.id);
+  }
+
   @Put(':channel_id')
   @UseGuards(OwnerGuard)
   updateChannel(
@@ -30,8 +35,8 @@ export class ChannelsController {
   }
 
   @Get(':channel_id')
-  getOneChannel(@Param('channel_id') channelId: number): Promise<Channel> {
-    return this.channelService.findOneChannel(channelId);
+  getOneChannelWithUsers(@Param('channel_id', ParseIntPipe) channelId: number): Promise<Channel> {
+    return this.channelService.findOneChannelWithUsers(channelId);
   }
 
   @Get()
@@ -52,8 +57,12 @@ export class ChannelsController {
 
   @Post(':channel_id/ban/:user_id')
   @UseGuards(AdminGuard)
-  banUser(@Param('channel_id', ChannelByIdPipe) channel: Channel, @Param('user_id', UserByIdPipe) user: User): Promise<void> {
-    return this.channelService.banUser(channel, user.id);
+  banUser(
+    @Param('channel_id', ParseIntPipe) channelId: number,
+    @Param('user_id', UserByIdPipe) userToBan: User,
+    @GetUser() actingUser: User
+  ): Promise<void> {
+    return this.channelService.banUser(channelId, userToBan.id, actingUser.id);
   }
 
   @Delete(':channel_id/ban/:user_id')
@@ -67,8 +76,12 @@ export class ChannelsController {
 
   @Delete(':channel_id/kick/:user_id')
   @UseGuards(AdminGuard)
-  kickUser(@Param('channel_id', ParseIntPipe) channelId: number, @Param('user_id', ParseIntPipe) userId: number): Promise<void> {
-    return this.channelService.kickUser(channelId, userId);
+  kickUser(
+    @Param('channel_id', ParseIntPipe) channelId: number,
+    @Param('user_id', UserByIdPipe) userToKick: User,
+    @GetUser() actingUser: User
+  ) {
+    return this.channelService.kickUser(channelId, userToKick.id, actingUser.id);
   }
 
   @Put(':channel_id/admin/:user_id/give')
