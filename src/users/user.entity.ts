@@ -22,7 +22,7 @@ export class User {
   @Column({ type: 'varchar', length: 256, nullable: true })
   bio: string;
 
-  @Column({ default: true })
+  @Column({ default: false })
   is2fa: boolean;
 
   @Column()

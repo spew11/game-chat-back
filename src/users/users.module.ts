@@ -3,10 +3,10 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user.entity';
-import { Notification } from '../notifications/notification.entity';
+import { SecureShieldModule } from 'src/secure-shield/secure-shield.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Notification])],
+  imports: [TypeOrmModule.forFeature([User]), SecureShieldModule],
   exports: [TypeOrmModule, UsersService],
   providers: [UsersService],
   controllers: [UsersController],

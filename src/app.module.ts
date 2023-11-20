@@ -6,9 +6,9 @@ import { TypeORMConfigProvider } from '@configs/typeorm.config';
 import { AuthModule } from './auth/auth.module';
 import { TestService } from './test.service';
 import { ConfigModule } from '@nestjs/config';
-import { NotificationsModule } from './notifications/notifications.module';
 import { ChannelsModule } from './channels/channels.module';
 import { CommonsModule } from './commons/commons.module';
+import { SecureShieldModule } from './secure-shield/secure-shield.module';
 
 @Module({
   imports: [
@@ -22,9 +22,9 @@ import { CommonsModule } from './commons/commons.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    NotificationsModule,
     ChannelsModule,
     CommonsModule,
+    SecureShieldModule,
   ],
   providers: [TestService],
 })

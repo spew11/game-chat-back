@@ -8,20 +8,21 @@ import {
   Body,
   Param,
   UnauthorizedException,
-  InternalServerErrorException,
   UseGuards,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { UsersService } from 'src/users/users.service';
 import { AuthGuard } from './auth.guard';
+import { SecureShieldService } from 'src/secure-shield/secure-shield.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
     private usersService: UsersService,
+    private secureShieldService: SecureShieldService,
   ) {}
 
   // async logout(@Req() req: Request, @Res() res: Response, @GetUser() user: User): Promise<void> {
@@ -68,13 +69,19 @@ export class AuthController {
       await this.authService.loginUser(req, user);
       res.send({ redirect: 'home' });
     } else {
-      res.header('Set-Cookie', [`access_token=${accessToken}; SameSite=None; Secure; Max-Age=720000; HttpOnly=false`]);
+      res.header('Set-Cookie', [
+        `access_token=${accessToken}; SameSite=None; Secure; Max-Age=720000; HttpOnly=false`,
+      ]);
       res.send({ redirect: 'register' });
     }
   }
 
   @Post('register')
-  async userAdd(@Req() req: Request, @Res() res: Response, @Body() createUserDto: CreateUserDto): Promise<void> {
+  async userAdd(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<void> {
     const accessToken = req.cookies['access_token'];
     if (accessToken) {
       const userEmail = await this.authService.getEmail(accessToken);
