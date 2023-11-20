@@ -89,6 +89,10 @@ export class ChannelsService {
         relations: ['channelRelations', 'channelRelations.user'],
     });
 
+    if (!channelWithUsers) {
+      throw new NotFoundException('채널을 찾을 수 없습니다!');
+    }
+
     return channelWithUsers;
 }
 
