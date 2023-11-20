@@ -1,5 +1,5 @@
 import { ChannelByIdPipe } from './../pipes/ChannelById.Pipe';
-import { Body, Controller, Delete, Get, Param,  Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, UseGuards } from '@nestjs/common';
 import { ChannelsService } from './channels.service';
 import { GetUser } from 'src/auth/user.decorator';
 import { User } from 'src/users/user.entity';
@@ -40,14 +40,14 @@ export class ChannelsController {
   }
 
   @Delete(':channel_id')
-  exitChannel(@GetUser() user: User, @Param('channel_id', ChannelByIdPipe) channel: Channel): Promise<void> {
-    return this.channelService.exitChannel(user, channel.id);
+  exitChannel(@GetUser() user: User, @Param('channel_id', ParseIntPipe) channelId: number): Promise<void> {
+    return this.channelService.exitChannel(user, channelId);
   }
 
   @Get(':channel_id/ban')
   @UseGuards(AdminGuard)
-  getAllChannelBannedUsers(@Param('channel_id', ChannelByIdPipe) channel: Channel): Promise<User[]> {
-    return this.channelService.findAllChannelBannedUsers(channel.id);
+  getAllChannelBannedUsers(@Param('channel_id', ParseIntPipe) channelId: number): Promise<User[]> {
+    return this.channelService.findAllChannelBannedUsers(channelId);
   }
 
   @Post(':channel_id/ban/:user_id')
@@ -62,8 +62,11 @@ export class ChannelsController {
 
   @Delete(':channel_id/ban/:user_id')
   @UseGuards(AdminGuard)
-  cancelBannedUser(@Param('channel_id', ChannelByIdPipe) channel: Channel, @Param('user_id', UserByIdPipe) user: User): Promise<void> {
-    return this.channelService.cancelBannedUser(channel.id, user.id);
+  cancelBannedUser(
+    @Param('channel_id', ParseIntPipe) channelId: number,
+    @Param('user_id', ParseIntPipe) userId: number,
+  ): Promise<void> {
+    return this.channelService.cancelBannedUser(channelId, userId);
   }
 
   @Delete(':channel_id/kick/:user_id')
@@ -78,20 +81,20 @@ export class ChannelsController {
 
   @Put(':channel_id/admin/:user_id/give')
   @UseGuards(OwnerGuard)
-  giveAdmin(@Param('channel_id', ChannelByIdPipe) channel: Channel, @Param('user_id', UserByIdPipe) user: User): Promise<void> {
-    return this.channelService.updateAdmin(channel.id, user.id, { isAdmin: true });
+  giveAdmin(@Param('channel_id', ParseIntPipe) channelId: number, @Param('user_id', ParseIntPipe) userId: number): Promise<void> {
+    return this.channelService.updateAdmin(channelId, userId, { isAdmin: true });
   }
 
   @Put(':channel_id/admin/:user_id/deprive')
   @UseGuards(OwnerGuard)
-  depriveAdmin(@Param('channel_id', ChannelByIdPipe) channel: Channel, @Param('user_id', UserByIdPipe) user: User): Promise<void> {
-    return this.channelService.updateAdmin(channel.id, user.id, { isAdmin: false });
+  depriveAdmin(@Param('channel_id', ParseIntPipe) channelId: number, @Param('user_id', ParseIntPipe) userId: number): Promise<void> {
+    return this.channelService.updateAdmin(channelId, userId, { isAdmin: false });
   }
 
   @Put(':channel_id/owner/:user_id')
   @UseGuards(OwnerGuard)
-  changeOwner(@GetUser() owner: User, @Param('channel_id', ChannelByIdPipe) channel: Channel, @Param('user_id', UserByIdPipe) successorId: User): Promise<void> {
-    return this.channelService.changeOwner(channel.id, owner.id, successorId.id);
+  changeOwner(@GetUser() owner: User, @Param('channel_id', ParseIntPipe) channelId: number, @Param('user_id', ParseIntPipe) successorId: number): Promise<void> {
+    return this.channelService.changeOwner(channelId, owner.id, successorId);
   }
 
   @Post(':channel_id/invite/:user_id')
