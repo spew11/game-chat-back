@@ -186,6 +186,17 @@ export class UserRelationService {
     return relations.map((relation) => relation.otherUser);
   }
 
+  async findAllFriendRequests(userId: number): Promise<User[]> {
+    const relations = await this.userRelationRepository.find({
+      where: {
+        user: { id: userId },
+        status: UserRelationStatusEnum.FRIEND_REQUEST,
+      },
+      relations: ['otherUser'],
+    });
+    return relations.map((relation) => relation.otherUser);
+  }
+
   async unblockUserRelation(userId: number, otherUserId: number): Promise<void> {
     if (userId == otherUserId) {
       throw new BadRequestException('잘못된 요청입니다.');
