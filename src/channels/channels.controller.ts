@@ -127,8 +127,8 @@ export class ChannelsController {
     return this.channelService.join(user, channel, body.providedPassword);
   }
 
-  @Get('user/:user_id')
-    async getChannelsByUser(@Param('user_id', UserByIdPipe) user: User): Promise<any[]> {
+  @Get('me')
+  async getChannelsByUser(@GetUser() user: User): Promise<any[]> {
     return this.channelService.findChannelsByUser(user);
   }
 
