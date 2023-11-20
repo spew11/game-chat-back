@@ -1,6 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { ChannelRelation } from 'src/channels/entities/channel-relation.entity';
-import { Channel } from 'src/channels/entities/channel.entity';
 import { ChannelInvitation } from '../channels/entities/channel-invitation.entity';
 
 @Entity()
@@ -25,6 +24,9 @@ export class User {
 
   @Column({ default: true })
   is2fa: boolean;
+
+  @Column()
+  otpSecret: string;
 
   @OneToMany(() => ChannelRelation, (channelRelation) => channelRelation.user)
   channelRelations: ChannelRelation[];
