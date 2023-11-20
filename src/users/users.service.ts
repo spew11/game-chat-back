@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { FindOneOptions, Repository } from 'typeorm';
@@ -40,5 +40,13 @@ export class UsersService {
   updateUser(user: User, updateUserDto: UpdateUserDto) {
     Object.assign(user, updateUserDto);
     return this.userRepository.save(user);
+  }
+
+  async activate2fa(user: User): Promise<void> {
+    if (user.is2fa) {
+      throw new BadRequestException('이미 2차인증이 활성화되어있습니다.');
+    }
+    user.is2fa = true;
+    await this.userRepository.save(user);
   }
 }
