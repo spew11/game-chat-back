@@ -425,9 +425,9 @@ export class ChannelsService {
     });
   }
 
-  async findChannelsByUser(user: User): Promise<any[]> {
+  async findChannelsByUser(userId: number): Promise<any[]> {
     const channelRelations = await this.channelRelationRepository.find({
-      where: { user: { id: user.id } },
+      where: { user: { id: userId } },
       relations: ['channel'],
     });
 

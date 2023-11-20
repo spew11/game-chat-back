@@ -20,6 +20,11 @@ export class ChannelsController {
     return this.channelService.createChannel(user, channelDto);
   }
 
+  @Get('me')
+  getChannelsByUser(@GetUser() user: User): Promise<any[]> {
+    return this.channelService.findChannelsByUser(user.id);
+  }
+
   @Put(':channel_id')
   @UseGuards(OwnerGuard)
   updateChannel(
@@ -52,7 +57,7 @@ export class ChannelsController {
 
   @Post(':channel_id/ban/:user_id')
   @UseGuards(AdminGuard)
-  async banUser(
+  banUser(
     @Param('channel_id', ChannelByIdPipe) channel: Channel,
     @Param('user_id', UserByIdPipe) userToBan: User,
     @GetUser() actingUser: User
@@ -71,7 +76,7 @@ export class ChannelsController {
 
   @Delete(':channel_id/kick/:user_id')
   @UseGuards(AdminGuard)
-  async kickUser(
+  kickUser(
     @Param('channel_id', ChannelByIdPipe) channel: Channel,
     @Param('user_id', UserByIdPipe) userToKick: User,
     @GetUser() actingUser: User
@@ -128,11 +133,6 @@ export class ChannelsController {
     @Body() body: { providedPassword: string },
   ): Promise<void> {
     return this.channelService.join(user, channel, body.providedPassword);
-  }
-
-  @Get('me')
-  async getChannelsByUser(@GetUser() user: User): Promise<any[]> {
-    return this.channelService.findChannelsByUser(user);
   }
 
 
