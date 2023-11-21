@@ -25,7 +25,7 @@ export class User {
   @Column({ default: false })
   is2fa: boolean;
 
-  @Column()
+  @Column({ nullable: true })
   otpSecret: string;
 
   @OneToMany(() => ChannelRelation, (channelRelation) => channelRelation.user)
