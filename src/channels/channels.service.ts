@@ -462,17 +462,11 @@ export class ChannelsService {
     }
 
     if (actingUserRelation.isOwner || (actingUserRelation.isAdmin && !userToMuteRelation.isAdmin && !userToMuteRelation.isOwner)) {
-      if (userToMuteRelation.isMuted) {
         const now = new Date();
-        if (userToMuteRelation.muteUntil > now) {
+        if (userToMuteRelation.muteUntil && userToMuteRelation.muteUntil > now) {
             throw new ForbiddenException('이미 mute된 유저입니다.');
-        } else {
-            userToMuteRelation.isMuted = false;
-            userToMuteRelation.muteUntil = null;
-            await this.channelRelationRepository.save(userToMuteRelation);
-        } // mute 시간이 만료됐으면 mute 상태 해제
-    }
-        userToMuteRelation.isMuted = true;
+        }
+
         userToMuteRelation.muteUntil = muteUntil;
         await this.channelRelationRepository.save(userToMuteRelation);
         // this.chatGateway.letUsersKnow(channelId, mutedUserId);
@@ -487,23 +481,25 @@ export class ChannelsService {
         where: { user: { id: userId }, channel: { id: channelId } },
     });
 
-    if (!userRelation || !userRelation.isMuted) return false;
+    if (!userRelation || !userRelation.muteUntil) return false;
 
     const now = new Date();
     if (userRelation.muteUntil > now) {
         return true; // 유저가 아직 muted 상태
     } else {
-        userRelation.isMuted = false;
         userRelation.muteUntil = null;
         await this.channelRelationRepository.save(userRelation);
         return false;
     } // 5분의 시간이 경과되면 mute 해제
   }
+  // 채널 소켓 메소드에서
+  // const isMuted = await this.channelsService.isUserMuted(userId, channelId);
+  // if (isMuted) {
+  //   socket.emit()
+  //   return;
+  // }
+  // mute가 아니면 소켓으로 유저들에게 메세지 보내는 로직 수행
+
 }
 
-// const isMuted = await this.channelsService.isUserMuted(userId, channelId);
-// if (isMuted) {
-//   socket.emit()
-//   return;
-// }
-// mute가 아니면 소켓으로 유저들에게 메세지 보내는 로직 수행
+
