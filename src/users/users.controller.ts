@@ -31,6 +31,7 @@ export class UsersController {
   @Get('me')
   getUserInfomation(@GetUser() user: User): ShowUserInforamtionDto {
     const userDto = new ShowUserInforamtionDto();
+    userDto.id = user.id;
     userDto.avatar = user.avatar;
     userDto.bio = user.bio;
     userDto.email = user.email;
