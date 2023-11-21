@@ -41,9 +41,23 @@ export class UsersService {
 
   async activate2fa(user: User): Promise<void> {
     if (user.is2fa) {
-      throw new BadRequestException('이미 2차인증이 활성화되어있습니다.');
+      throw new BadRequestException('2단계 인증이 이미 활성화 상태입니다.');
     }
     user.is2fa = true;
+    await this.userRepository.save(user);
+  }
+
+  async deactivate2fa(user: User): Promise<void> {
+    if (user.is2fa === false) {
+      throw new BadRequestException('2단계 인증이 이미 비활성화 상태입니다.');
+    }
+    user.is2fa = false;
+    user.otpSecret = null;
+    await this.userRepository.save(user);
+  }
+
+  async createSecretKey(user: User): Promise<void> {
+    user.otpSecret = this.secureShieldService.encrypt(this.secureShieldService.generateSecretKey());
     await this.userRepository.save(user);
   }
 }

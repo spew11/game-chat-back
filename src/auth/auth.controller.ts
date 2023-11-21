@@ -9,25 +9,21 @@ import {
   Param,
   UnauthorizedException,
   UseGuards,
-  BadRequestException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { UsersService } from 'src/users/users.service';
 import { AuthGuard } from './auth.guard';
-import { SecureShieldService } from 'src/secure-shield/secure-shield.service';
 import { GetUser } from './user.decorator';
 import { User } from 'src/users/user.entity';
 import { TotpDto } from 'src/secure-shield/dtos/totp.dto';
-import { access } from 'fs';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
     private usersService: UsersService,
-    private secureShieldService: SecureShieldService,
   ) {}
 
   // async logout(@Req() req: Request, @Res() res: Response, @GetUser() user: User): Promise<void> {
@@ -112,33 +108,31 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard)
-  @Get('otpauthurl')
-  getOtpAuthUrl(@GetUser() user: User): string {
-    if (user.is2fa) {
-      throw new BadRequestException('2차인증이 이미 활성화 상태입니다.');
-    }
-    const otpSecret = this.secureShieldService.decrypt(user.otpSecret);
-    const otpAuthUrl = this.secureShieldService.generateOtpAuthUrl(user.email, otpSecret);
-    return otpAuthUrl;
+  @Post('2fa/off')
+  async deactivate2fa(@Res() res: Response, @GetUser() user: User) {
+    await this.usersService.deactivate2fa(user);
+    res.send({ success: true });
   }
 
   @UseGuards(AuthGuard)
-  @Post('otp-registration')
+  @Post('2fa/setup')
+  async getOtpAuthUrl(@Res() res: Response, @GetUser() user: User): Promise<void> {
+    const otpAuthUrl = await this.authService.initialize2fa(user);
+    res.send({ otpauthurl: otpAuthUrl });
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('2fa/on')
   async activate2fa(
     @Res() res: Response,
     @GetUser() user: User,
     @Body() totpDto: TotpDto,
   ): Promise<void> {
-    const otpSecret = this.secureShieldService.decrypt(user.otpSecret);
-    if (this.secureShieldService.isValidTotp(totpDto.token, otpSecret)) {
-      await this.usersService.activate2fa(user);
-      res.send({ success: true });
-    } else {
-      res.send({ success: false });
-    }
+    const result = await this.authService.verifyTotpAndEnable2fa(user, totpDto);
+    res.send({ success: result });
   }
 
-  @Get('otp-authentication')
+  @Post('2fa/login')
   async verifyTotpCode(
     @Req() req: Request,
     @Res() res: Response,
@@ -147,14 +141,8 @@ export class AuthController {
     const accessToken = req.cookies['access_token'];
     if (accessToken) {
       const userEmail = await this.authService.getEmail(accessToken);
-      const user = await this.usersService.findByEmail(userEmail);
-      const otpSecret = this.secureShieldService.decrypt(user.otpSecret);
-      if (this.secureShieldService.isValidTotp(totpDto.token, otpSecret)) {
-        await this.authService.loginUser(req, user);
-        res.send({ success: 'true' });
-      } else {
-        res.send({ success: 'false' });
-      }
+      const result = await this.authService.loginWithTotpValidation(req, userEmail, totpDto);
+      res.send({ success: result });
     } else {
       throw new UnauthorizedException('로그인이 필요합니다.');
     }
