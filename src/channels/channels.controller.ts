@@ -135,6 +135,16 @@ export class ChannelsController {
     return this.channelService.join(user, channel, body.providedPassword);
   }
 
+  @Post(':channel_id/mute/:user_id')
+  @UseGuards(AdminGuard)
+  muteUser(
+    @Param('channel_id', ParseIntPipe) channelId: number,
+    @Param('user_id', UserByIdPipe) userToMute: User,
+    @GetUser() actingUser: User
+  ): Promise<void> {
+      return this.channelService.muteUser(channelId, userToMute.id, actingUser.id);
+  }
+
 
 }
 
