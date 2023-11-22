@@ -106,8 +106,9 @@ export class ChannelsController {
   inviteUser(
     @Param('channel_id', ChannelByIdPipe) channel: Channel,
     @Param('user_id', UserByIdPipe) invitedUser: User,
-    ): Promise<ChannelInvitation> {
-    return this.channelService.inviteUser(channel, invitedUser);
+    @GetUser() actingUser: User
+  ): Promise<ChannelInvitation> {
+    return this.channelService.inviteUser(channel, invitedUser, actingUser);
   }
 
   @Post(':channel_id/accept-invite')
@@ -133,6 +134,16 @@ export class ChannelsController {
     @Body() body: { providedPassword: string },
   ): Promise<void> {
     return this.channelService.join(user, channel, body.providedPassword);
+  }
+
+  @Post(':channel_id/mute/:user_id')
+  @UseGuards(AdminGuard)
+  muteUser(
+    @Param('channel_id', ParseIntPipe) channelId: number,
+    @Param('user_id', UserByIdPipe) userToMute: User,
+    @GetUser() actingUser: User
+  ): Promise<void> {
+      return this.channelService.muteUser(channelId, userToMute.id, actingUser.id);
   }
 
 
