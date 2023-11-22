@@ -25,6 +25,19 @@ export class UserRelationController {
     return showFriendRelationsDtos;
   }
 
+  @Get('friends')
+  async getFriendsList(@GetUser() user: User): Promise<ShowFriendRelationsDto[]> {
+    const relations = await this.userRelationService.findAllFriends(user.id);
+    const showFriendRelationsDtos: ShowFriendRelationsDto[] = relations.map((relation) => {
+      const showFriendRelationsDto = new ShowFriendRelationsDto();
+      showFriendRelationsDto.otherUserId = relation.otherUser.id;
+      showFriendRelationsDto.nickname = relation.otherUser.nickname;
+      showFriendRelationsDto.status = relation.status;
+      return showFriendRelationsDto;
+    });
+    return showFriendRelationsDtos;
+  }
+
   @Post('friends/:user_id/request')
   async requestFriend(
     @GetUser() user: User,
