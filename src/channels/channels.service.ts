@@ -252,6 +252,10 @@ export class ChannelsService {
       throw new ForbiddenException('채널 소유자의 권한을 변경할 수 없습니다!');
     }
 
+    if (!updateData.isAdmin && !requestedUserRelation.isAdmin) {
+      throw new ForbiddenException('이미 관리자 권한이 없는 유저입니다!');
+  }
+
     requestedUserRelation.isAdmin = updateData.isAdmin;
     this.channelRelationRepository.save(requestedUserRelation);
   }

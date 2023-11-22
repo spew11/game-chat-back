@@ -1,5 +1,5 @@
 import { User } from './../../users/user.entity';
-import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Column, UpdateDateColumn } from 'typeorm';
 import { Channel } from './channel.entity';
 
 export enum InvitationStatus {
@@ -12,6 +12,9 @@ export enum InvitationStatus {
 export class ChannelInvitation {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @ManyToOne(() => User, (user) => user.channelInvitations, {
     onDelete: 'CASCADE',
