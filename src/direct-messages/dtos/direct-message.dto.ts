@@ -9,6 +9,9 @@ export class DirectMessageDto {
   sender: ShowUserOverviewDto;
 
   @Expose()
+  receiver: ShowUserOverviewDto;
+
+  @Expose()
   content: string;
 
   @Expose()

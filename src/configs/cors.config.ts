@@ -1,4 +1,5 @@
 const corsOrigins = [
+  'https://localhost:3000',
   'http://localhost:3000',
   'https://develop.d35lpok7005dz1.amplifyapp.com',
   'https://localhost:5500',
