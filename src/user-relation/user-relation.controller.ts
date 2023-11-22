@@ -12,7 +12,7 @@ import { UserByIdPipe } from 'src/pipes/UserById.pipe';
 export class UserRelationController {
   constructor(private userRelationService: UserRelationService) {}
 
-  @Get('friends')
+  @Get('friends/relations')
   async getRelationList(@GetUser() user: User): Promise<ShowFriendRelationsDto[]> {
     const relations = await this.userRelationService.findAllFriendRelations(user.id);
     const showFriendRelationsDtos: ShowFriendRelationsDto[] = relations.map((relation) => {
