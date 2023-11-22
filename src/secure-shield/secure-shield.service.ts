@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
-import { authenticator, totp } from 'otplib';
+import { authenticator } from 'otplib';
 import * as base32 from 'thirty-two';
 
 @Injectable()
