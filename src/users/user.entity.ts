@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { ChannelRelation } from 'src/channels/entities/channel-relation.entity';
-import { Channel } from 'src/channels/entities/channel.entity';
 import { ChannelInvitation } from '../channels/entities/channel-invitation.entity';
+import { AvatarEnum } from './enums/avatar.enum';
 
 @Entity()
 export class User {
@@ -17,8 +17,12 @@ export class User {
   @Column({ default: 0 })
   ladderPoint: number;
 
-  @Column({ default: 'default image path' })
-  avatar: string;
+  @Column({
+    type: 'enum',
+    enum: AvatarEnum,
+    default: AvatarEnum.DEFAULT,
+  })
+  avatar: AvatarEnum;
 
   @Column({ type: 'varchar', length: 256, nullable: true })
   bio: string;

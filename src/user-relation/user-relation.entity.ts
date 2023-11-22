@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from 'src/users/user.entity';
 import { UserRelationStatusEnum } from 'src/user-relation/enums/user-relation-status.enum';
+import { UpdateDateColumn } from 'typeorm';
 
 @Entity()
 export class UserRelation {
@@ -14,6 +15,9 @@ export class UserRelation {
   @ManyToOne(() => User)
   @JoinColumn({ name: 'otherUserId' })
   otherUser: User;
+
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt: Date;
 
   @Column({
     type: 'enum',
