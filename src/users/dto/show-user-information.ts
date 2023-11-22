@@ -1,4 +1,5 @@
 export class ShowUserInforamtionDto {
+  id: number;
   email: string;
   nickname: string;
   ladderPoint: number;
