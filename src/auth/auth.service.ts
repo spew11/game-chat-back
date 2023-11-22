@@ -112,7 +112,7 @@ export class AuthService {
   async loginWithTotpValidation(req: Request, userEmail: string, totpDto: TotpDto) {
     const user = await this.usersService.findByEmail(userEmail);
     if (user) {
-      if (user.otpSecret) {
+      if (user.is2fa && user.otpSecret) {
         const otpSecret = this.secureShieldService.decrypt(user.otpSecret);
         if (this.secureShieldService.isValidTotp(totpDto.token, otpSecret)) {
           await this.loginUser(req, user);
@@ -121,7 +121,7 @@ export class AuthService {
           return false;
         }
       } else {
-        throw new NotFoundException('2단계 인증 정보가 존재하지 않습니다.');
+        throw new BadRequestException('2단계 인증이 비활성화 상태입니다.');
       }
     } else {
       throw new NotFoundException('존재하지 않는 유저입니다.');
