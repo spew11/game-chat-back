@@ -6,12 +6,14 @@ import { UserRelationStatusEnum } from 'src/user-relation/enums/user-relation-st
 import { CreateUserRelationDto } from './dtos/create-user-relation.dto';
 import { User } from 'src/users/user.entity';
 import { In } from 'typeorm';
+import { NotificationsGateway } from 'src/notifications/notifications.gateway';
 
 @Injectable()
 export class UserRelationService {
   constructor(
     @InjectRepository(UserRelation)
     private userRelationRepository: Repository<UserRelation>,
+    private notificationGateway: NotificationsGateway,
   ) {}
 
   async deleteFriendship(userId: number, otherUserId: number): Promise<void> {
@@ -100,11 +102,12 @@ export class UserRelationService {
       });
       if (!recipientSide) {
         // otherUser-user 인스턴스 생성
-        await this.createUserRelation({
+        const pendingRelation = await this.createUserRelation({
           user: recipient,
           otherUser: requester,
           status: UserRelationStatusEnum.PENDING_APPROVAL,
         });
+        this.notificationGateway.notiFriendRequest(pendingRelation);
       }
     } else {
       throw new BadRequestException('잘못된 요청입니다.');
@@ -186,15 +189,18 @@ export class UserRelationService {
     return relations.map((relation) => relation.otherUser);
   }
 
-  async findAllFriendRequests(userId: number): Promise<User[]> {
+  async findAllPendingApproval(userId: number): Promise<UserRelation[]> {
     const relations = await this.userRelationRepository.find({
       where: {
         user: { id: userId },
-        status: UserRelationStatusEnum.FRIEND_REQUEST,
+        status: UserRelationStatusEnum.PENDING_APPROVAL,
       },
-      relations: ['otherUser'],
+      relations: {
+        user: true,
+        otherUser: true,
+      },
     });
-    return relations.map((relation) => relation.otherUser);
+    return relations;
   }
 
   async unblockUserRelation(userId: number, otherUserId: number): Promise<void> {
