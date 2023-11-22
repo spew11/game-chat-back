@@ -106,8 +106,9 @@ export class ChannelsController {
   inviteUser(
     @Param('channel_id', ChannelByIdPipe) channel: Channel,
     @Param('user_id', UserByIdPipe) invitedUser: User,
-    ): Promise<ChannelInvitation> {
-    return this.channelService.inviteUser(channel, invitedUser);
+    @GetUser() actingUser: User
+  ): Promise<ChannelInvitation> {
+    return this.channelService.inviteUser(channel, invitedUser, actingUser);
   }
 
   @Post(':channel_id/accept-invite')

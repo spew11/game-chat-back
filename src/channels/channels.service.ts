@@ -290,7 +290,19 @@ export class ChannelsService {
     this.channelRelationRepository.save([currentOwnerRelation, successorRelation]);
   }
 
-  async inviteUser(channel: Channel, invitedUser: User): Promise<ChannelInvitation> {
+  async inviteUser(channel: Channel, invitedUser: User, actingUser: User): Promise<ChannelInvitation> {
+    const actingUserRelation = await this.channelRelationRepository.findOne({
+      where: { channel, user: actingUser },
+    });
+
+    if (!actingUserRelation) {
+      throw new ForbiddenException('초대하려는 유저는 채널의 멤버가 아닙니다!');
+    }
+
+    if (invitedUser.id === actingUser.id) {
+      throw new BadRequestException('자신을 채널에 초대할 수 없습니다!');
+   }
+
     if (channel.type !== ChannelType.private) {
       throw new BadRequestException('private 채널에서만 초대가 허용됩니다!');
     }
