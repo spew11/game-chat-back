@@ -19,9 +19,6 @@ export class ChannelRelation {
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ default: false })
-  isMuted: boolean;
-
   @Column({ nullable: true, type: 'timestamp' })
   muteUntil: Date;
 
