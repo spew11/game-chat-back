@@ -1,4 +1,5 @@
 import { Expose } from 'class-transformer';
+import { AvatarEnum } from '../enums/avatar.enum';
 
 export class ShowUserOverviewDto {
   @Expose()
@@ -11,5 +12,5 @@ export class ShowUserOverviewDto {
   ladderPoint: number;
 
   @Expose()
-  avatar: string;
+  avatar: AvatarEnum;
 }
