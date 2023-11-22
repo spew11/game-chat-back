@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import { authenticator, totp } from 'otplib';
+import * as base32 from 'thirty-two';
 
 @Injectable()
 export class SecureShieldService {
@@ -18,12 +19,8 @@ export class SecureShieldService {
     return authenticator.generateSecret();
   }
 
-  generateTotp(secretKey: string): string {
-    return totp.generate(secretKey);
-  }
-
   isValidTotp(token: string, secretKey: string): boolean {
-    return totp.verify({ token, secret: secretKey });
+    return authenticator.verify({ token: token, secret: secretKey });
   }
 
   encrypt(text: string): string {
@@ -42,7 +39,7 @@ export class SecureShieldService {
     return JSON.stringify({ iv: iv.toString('hex'), encrypted: encrypted.toString('hex') });
   }
 
-  decrypt(text: string) {
+  decrypt(text: string): string {
     const encryptionRes = JSON.parse(text) as { iv: string; encrypted: string };
     const iv = Buffer.from(encryptionRes.iv, 'hex'); // JSON.stringfy 때문에 직렬화된 iv를 다시 Buffer타입으로 변환
     const encrypted = Buffer.from(encryptionRes.encrypted, 'hex');
@@ -53,6 +50,7 @@ export class SecureShieldService {
     );
     let decrypted = decipher.update(encrypted);
     decrypted = Buffer.concat([decrypted, decipher.final()]);
-    return decrypted.toString();
+    const encoded = base32.encode(decrypted);
+    return encoded;
   }
 }
