@@ -1,5 +1,12 @@
 import { User } from 'src/users/user.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+} from 'typeorm';
 import { Channel } from './channel.entity';
 
 @Entity()
@@ -19,14 +26,8 @@ export class ChannelRelation {
   @CreateDateColumn()
   createdAt: Date;
 
-  // @Column({ default: false })
-  // isMuted: boolean;
-
-  // @Column({ default: 5 })
-  // mutedTime: number;
-
-  // @CreateDateColumn()
-  // muteCreatedAt: Date;
+  @Column({ nullable: true, type: 'timestamp' })
+  muteUntil: Date;
 
   @ManyToOne(() => User, (user) => user.channelRelations, {
     onDelete: 'CASCADE',

@@ -1,17 +1,27 @@
 import { User } from './../../users/user.entity';
-import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+  Column,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Channel } from './channel.entity';
 
 export enum InvitationStatus {
-  Waiting = "waiting",
-  Accepted = "accepted",
-  Refused = "refused"
+  Waiting = 'waiting',
+  Accepted = 'accepted',
+  Refused = 'refused',
 }
 
 @Entity()
 export class ChannelInvitation {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @ManyToOne(() => User, (user) => user.channelInvitations, {
     onDelete: 'CASCADE',
@@ -26,9 +36,9 @@ export class ChannelInvitation {
   channel: Channel;
 
   @Column({
-    type: "enum",
+    type: 'enum',
     enum: InvitationStatus,
-    default: InvitationStatus.Waiting
+    default: InvitationStatus.Waiting,
   })
   status: InvitationStatus;
 }
