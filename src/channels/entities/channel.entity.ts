@@ -1,7 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 
 import { ChannelRelation } from './channel-relation.entity';
-import { MinLength } from 'class-validator';
 import { ChannelInvitation } from './channel-invitation.entity';
 
 export enum ChannelType {
