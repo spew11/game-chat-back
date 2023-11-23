@@ -10,6 +10,7 @@ import { ChannelsModule } from './channels/channels.module';
 import { CommonsModule } from './commons/commons.module';
 import { DirectMessagesModule } from './direct-messages/direct-messages.module';
 import { SecureShieldModule } from './secure-shield/secure-shield.module';
+import { GamesModule } from './games/games.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { SecureShieldModule } from './secure-shield/secure-shield.module';
     CommonsModule,
     DirectMessagesModule,
     SecureShieldModule,
+    GamesModule,
   ],
   providers: [TestService],
 })

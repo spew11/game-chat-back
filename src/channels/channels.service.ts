@@ -3,8 +3,10 @@ import { User } from './../users/user.entity';
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { Channel, ChannelType } from './entities/channel.entity';
 import { ChannelRelation } from './entities/channel-relation.entity';
@@ -13,6 +15,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ChannelDto } from './dto/channel.dto';
 import * as bcrypt from 'bcrypt';
 import { ChannelInvitation, InvitationStatus } from './entities/channel-invitation.entity';
+import { NotificationsGateway } from 'src/notifications/notifications.gateway';
+// import { ChatService } from './channels-chat.service';
+// import { ChatGateway } from './channels.gateway';
 
 @Injectable()
 export class ChannelsService {
@@ -23,6 +28,7 @@ export class ChannelsService {
     private channelRelationRepository: Repository<ChannelRelation>,
     @InjectRepository(ChannelInvitation)
     private channelInvitationRepository: Repository<ChannelInvitation>,
+    private notificationGateway: NotificationsGateway,
   ) {}
 
   async createChannel(owner: User, channelDto: ChannelDto): Promise<Channel> {
@@ -399,6 +405,19 @@ export class ChannelsService {
 
     invitation.status = InvitationStatus.Refused;
     await this.channelInvitationRepository.save(invitation);
+  }
+
+  async findAllInvitation(userId: number): Promise<ChannelInvitation[]> {
+    return this.channelInvitationRepository.find({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+      relations: {
+        user: true,
+      },
+    });
   }
 
   async join(user: User, channel: Channel, providedPassword?: string): Promise<void> {

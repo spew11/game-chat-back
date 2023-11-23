@@ -36,9 +36,20 @@ export class NotificationsGateway {
   async getUnreadNoti(@ConnectedSocket() clientSocket: Socket) {
     const userId = await this.mainGateway.socketToUser(clientSocket.id);
     const penddings = await this.userRelationsService.findAllPendingApproval(userId);
+    // channel들 추가
     return dtoSerializer(NotiFriendRequestDto, penddings);
   }
 
+  // prettier-ignore
+  notiGameInvite(invitedUserId: number, invitingUser: User) {
+    this.server
+      .to(invitedUserId.toString())
+      .emit('noti', { 
+        type: NotificationType.GAME_INVITE,
+        invitingUser
+        // gameType
+      });
+  }
 
   // prettier-ignore
   notiChannelInvite(invitingUser: User, invitation: ChannelInvitation) {

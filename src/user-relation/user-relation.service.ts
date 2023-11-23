@@ -213,6 +213,19 @@ export class UserRelationService {
     return relations;
   }
 
+  async findAllBlockingUsers(blockedUserId: number): Promise<User[]> {
+    const relations = await this.userRelationRepository.find({
+      where: {
+        otherUser: { id: blockedUserId },
+        status: UserRelationStatusEnum.BLOCKED,
+      },
+      relations: {
+        user: true,
+      },
+    });
+    return relations.map((relation) => relation.user);
+  }
+
   async unblockUserRelation(userId: number, otherUserId: number): Promise<void> {
     if (userId == otherUserId) {
       throw new BadRequestException('잘못된 요청입니다.');
