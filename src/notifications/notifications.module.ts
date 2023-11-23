@@ -7,6 +7,6 @@ import { CommonsModule } from 'src/commons/commons.module';
 @Module({
   imports: [forwardRef(() => UserRelationModule), forwardRef(() => ChannelsModule), CommonsModule],
   providers: [NotificationsGateway],
-  exports: [NotificationsGateway, CommonsModule],
+  exports: [NotificationsGateway],
 })
 export class NotificationsModule {}

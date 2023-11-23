@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ChannelsController } from './channels.controller';
 import { ChannelsService } from './channels.service';
 import { UsersModule } from 'src/users/users.module';
@@ -14,10 +14,10 @@ import { NotificationsModule } from 'src/notifications/notifications.module';
 @Module({
   imports: [
     UsersModule,
-    UserRelationModule,
+    forwardRef(() => UserRelationModule),
     TypeOrmModule.forFeature([Channel, ChannelRelation, ChannelInvitation]),
     CommonsModule,
-    NotificationsModule,
+    forwardRef(() => NotificationsModule),
   ],
   controllers: [ChannelsController],
   providers: [ChannelsService, ChannelsGateway],

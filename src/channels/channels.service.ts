@@ -3,10 +3,8 @@ import { User } from './../users/user.entity';
 import {
   BadRequestException,
   ForbiddenException,
-  Inject,
   Injectable,
   NotFoundException,
-  forwardRef,
 } from '@nestjs/common';
 import { Channel, ChannelType } from './entities/channel.entity';
 import { ChannelRelation } from './entities/channel-relation.entity';
@@ -16,8 +14,6 @@ import { ChannelDto } from './dto/channel.dto';
 import * as bcrypt from 'bcrypt';
 import { ChannelInvitation, InvitationStatus } from './entities/channel-invitation.entity';
 import { NotificationsGateway } from 'src/notifications/notifications.gateway';
-// import { ChatService } from './channels-chat.service';
-// import { ChatGateway } from './channels.gateway';
 
 @Injectable()
 export class ChannelsService {

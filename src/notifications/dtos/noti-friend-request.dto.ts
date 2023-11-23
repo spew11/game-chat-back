@@ -1,6 +1,6 @@
 import { Expose, Transform } from 'class-transformer';
 import { NotificationType } from '../enums/notification.enum';
-import { ShowUserOverviewDto } from 'src/users/dto/show-user-overview.dto';
+import { ShowUserOverviewDto } from 'src/users/dtos/show-user-overview.dto';
 
 export class NotiFriendRequestDto {
   @Expose()
