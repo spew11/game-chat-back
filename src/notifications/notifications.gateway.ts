@@ -17,6 +17,9 @@ import { NotiChannelInviteDto } from './dtos/noti-channel-invite.dto';
 import { NotiFriendRequestDto } from './dtos/noti-friend-request.dto';
 import { UserRelation } from 'src/user-relation/user-relation.entity';
 import { ChannelInvitation } from 'src/channels/entities/channel-invitation.entity';
+import { ChannelsService } from 'src/channels/channels.service';
+
+type Noti = NotiChannelInviteDto | NotiFriendRequestDto;
 
 @UseFilters(new WebsocketExceptionsFilter())
 @UsePipes(new ValidationPipe())
@@ -29,6 +32,8 @@ export class NotificationsGateway {
   constructor(
     @Inject(forwardRef(() => UserRelationService))
     private userRelationsService: UserRelationService,
+    @Inject(forwardRef(() => ChannelsService))
+    private channelsService: ChannelsService,
     private mainGateway: MainGateway,
   ) {}
 
@@ -36,8 +41,15 @@ export class NotificationsGateway {
   async getUnreadNoti(@ConnectedSocket() clientSocket: Socket) {
     const userId = await this.mainGateway.socketToUser(clientSocket.id);
     const penddings = await this.userRelationsService.findAllPendingApproval(userId);
-    // channel들 추가
-    return dtoSerializer(NotiFriendRequestDto, penddings);
+    const invitations = await this.channelsService.findAllInvitation(userId);
+
+    const penddingDtos = dtoSerializer(NotiFriendRequestDto, penddings) as Noti[];
+    const invitationDtos = dtoSerializer(NotiChannelInviteDto, invitations) as Noti[];
+
+    const notis = penddingDtos
+      .concat(invitationDtos)
+      .sort((a, b) => a.updatedAt.getTime() - b.updatedAt.getTime());
+    return notis;
   }
 
   // prettier-ignore
@@ -52,12 +64,9 @@ export class NotificationsGateway {
   }
 
   // prettier-ignore
-  notiChannelInvite(invitingUser: User, invitation: ChannelInvitation) {
+  notiChannelInvite(invitation: ChannelInvitation) {
     const invitedUserId = invitation.user.id.toString()
-    const noti = dtoSerializer(NotiChannelInviteDto, {
-      ...invitation,
-      invitingUser,
-    })
+    const noti = dtoSerializer(NotiChannelInviteDto, invitation)
     this.server
       .to(invitedUserId)
       .emit('noti', noti);

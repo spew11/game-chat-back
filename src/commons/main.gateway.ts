@@ -2,10 +2,11 @@ import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { sessionMiddleware } from '@configs/session.config';
 import { ConfigService } from '@nestjs/config';
-import { NotFoundException, UseFilters } from '@nestjs/common';
+import { Inject, NotFoundException, UseFilters, forwardRef } from '@nestjs/common';
 import { RedisService } from './redis-client.service';
 import { WebsocketExceptionsFilter } from '../filters/websocket-exception.fileter';
 import { corsConfig } from '@configs/cors.config';
+import { ChannelsService } from 'src/channels/channels.service';
 
 @UseFilters(new WebsocketExceptionsFilter())
 @WebSocketGateway({
@@ -17,6 +18,8 @@ export class MainGateway {
   constructor(
     private configService: ConfigService,
     private redisService: RedisService,
+    @Inject(forwardRef(() => ChannelsService))
+    private channelsService: ChannelsService,
   ) {}
 
   // socket서버가 열릴 때
@@ -51,6 +54,9 @@ export class MainGateway {
 
     clientSocket.join(userId.toString());
     this.initClientRedis(clientSocket.id, userId, session.id);
+
+    const channelRelations = await this.channelsService.findChannelsByUser(userId);
+    channelRelations.forEach((channel) => clientSocket.join(channel.id.toString()));
   }
 
   // client와 연결이 해제 됬을 때

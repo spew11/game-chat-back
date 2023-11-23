@@ -1,6 +1,5 @@
 import { Expose, Transform } from 'class-transformer';
 import { NotificationType } from '../enums/notification.enum';
-import { ShowUserOverviewDto } from 'src/users/dtos/show-user-overview.dto';
 
 export class NotiChannelInviteDto {
   @Expose()
@@ -12,5 +11,5 @@ export class NotiChannelInviteDto {
   channelId: number;
 
   @Expose()
-  invitingUser: ShowUserOverviewDto;
+  updatedAt: Date;
 }

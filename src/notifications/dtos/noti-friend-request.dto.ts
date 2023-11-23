@@ -9,4 +9,7 @@ export class NotiFriendRequestDto {
 
   @Expose({ name: 'otherUser' })
   requestringUser: ShowUserOverviewDto;
+
+  @Expose()
+  updatedAt: Date;
 }

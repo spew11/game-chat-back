@@ -16,7 +16,7 @@ import { NotificationsModule } from 'src/notifications/notifications.module';
     UsersModule,
     forwardRef(() => UserRelationModule),
     TypeOrmModule.forFeature([Channel, ChannelRelation, ChannelInvitation]),
-    CommonsModule,
+    forwardRef(() => CommonsModule),
     forwardRef(() => NotificationsModule),
   ],
   controllers: [ChannelsController],

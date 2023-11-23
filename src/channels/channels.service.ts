@@ -3,8 +3,10 @@ import { User } from './../users/user.entity';
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { Channel, ChannelType } from './entities/channel.entity';
 import { ChannelRelation } from './entities/channel-relation.entity';
@@ -14,6 +16,7 @@ import { ChannelDto } from './dto/channel.dto';
 import * as bcrypt from 'bcrypt';
 import { ChannelInvitation, InvitationStatus } from './entities/channel-invitation.entity';
 import { NotificationsGateway } from 'src/notifications/notifications.gateway';
+import { ChannelsGateway } from './channels.gateway';
 
 @Injectable()
 export class ChannelsService {
@@ -24,6 +27,8 @@ export class ChannelsService {
     private channelRelationRepository: Repository<ChannelRelation>,
     @InjectRepository(ChannelInvitation)
     private channelInvitationRepository: Repository<ChannelInvitation>,
+    private channelsGateway: ChannelsGateway,
+    @Inject(forwardRef(() => NotificationsGateway))
     private notificationGateway: NotificationsGateway,
   ) {}
 
@@ -128,6 +133,8 @@ export class ChannelsService {
         this.channelRepository.delete(channelId);
       }
     }
+    // 소켓으로 channelRoom에서 나가고 채널 유저들에게 전파
+    await this.channelsGateway.leaveChannelRoom(user.id, channelId, channelRelation.id);
   }
 
   private async transferOwnership(earliestOwnerRelation: ChannelRelation): Promise<void> {
@@ -185,10 +192,11 @@ export class ChannelsService {
       if (bannedUserRelation.isBanned) {
         throw new ForbiddenException('이미 ban된 유저입니다!');
       }
-      // this.chatGateway.kickMember(channel.id, userId);
       // ban 전에 kick 처리
       bannedUserRelation.isBanned = true;
       await this.channelRelationRepository.save(bannedUserRelation);
+      await this.channelsGateway.leaveChannelRoom(bannedUserId, channelId, bannedUserRelation.id);
+      this.channelsGateway.emitChannelMemberUpdate(channelId, bannedUserRelation);
     } else {
       throw new ForbiddenException('관리자는 다른 관리자나 소유자를 ban할 수 없습니다!');
     }
@@ -207,7 +215,8 @@ export class ChannelsService {
       throw new NotFoundException('Banned된 유저가 채널에 없습니다!');
     }
 
-    this.channelRelationRepository.remove(channelRelation);
+    await this.channelRelationRepository.remove(channelRelation);
+    await this.channelsGateway.emitChannelMemberUpdate(channelId, channelRelation);
   }
 
   async kickUser(channelId: number, kickedUserId: number, actingUserId: number): Promise<void> {
@@ -235,8 +244,8 @@ export class ChannelsService {
       (actingUserRelation.isAdmin && !kickedUserRelation.isAdmin && !kickedUserRelation.isOwner)
     ) {
       // kick 실시간 소켓 처리
-      // this.chatGateway.kickMember(channelId, kickedUserId);
       await this.channelRelationRepository.remove(kickedUserRelation);
+      await this.channelsGateway.leaveChannelRoom(kickedUserId, channelId, kickedUserRelation.id);
     } else {
       throw new ForbiddenException('관리자는 다른 관리자나 소유자를 kick할 수 없습니다!');
     }
@@ -268,7 +277,8 @@ export class ChannelsService {
     }
 
     requestedUserRelation.isAdmin = updateData.isAdmin;
-    this.channelRelationRepository.save(requestedUserRelation);
+    await this.channelRelationRepository.save(requestedUserRelation);
+    await this.channelsGateway.emitChannelMemberUpdate(channelId, requestedUserRelation);
   }
 
   async changeOwner(channelId: number, currentOwnerId: number, successorId: number): Promise<void> {
@@ -301,7 +311,9 @@ export class ChannelsService {
     successorRelation.isOwner = true;
     successorRelation.isAdmin = true;
 
-    this.channelRelationRepository.save([currentOwnerRelation, successorRelation]);
+    await this.channelRelationRepository.save([currentOwnerRelation, successorRelation]);
+    this.channelsGateway.emitChannelMemberUpdate(channelId, currentOwnerRelation);
+    this.channelsGateway.emitChannelMemberUpdate(channelId, successorRelation);
   }
 
   async inviteUser(
@@ -341,6 +353,10 @@ export class ChannelsService {
     // 이미 초대되었는지 확인
     let existingInvitation = await this.channelInvitationRepository.findOne({
       where: { channel, user: invitedUser },
+      relations: {
+        user: true,
+        channel: true,
+      },
     });
 
     if (existingInvitation && existingInvitation.status === InvitationStatus.Refused) {
@@ -348,6 +364,7 @@ export class ChannelsService {
         status: InvitationStatus.Waiting,
       });
       await this.channelInvitationRepository.save(existingInvitation);
+      await this.notificationGateway.notiChannelInvite(existingInvitation);
       return existingInvitation;
     }
     // 유저가 이전에 초대되었지만 refuse했던 경우 status를 waiting으로 수정
@@ -358,7 +375,9 @@ export class ChannelsService {
         user: invitedUser,
         status: InvitationStatus.Waiting,
       });
-      return await this.channelInvitationRepository.save(newInvitation);
+      const savedInvitation = await this.channelInvitationRepository.save(newInvitation);
+      await this.notificationGateway.notiChannelInvite(savedInvitation);
+      return savedInvitation;
     }
     // 존재하는 초대가 없거나 이전에 초대를 수락했으면 초대 기록 남기기
 
@@ -387,7 +406,6 @@ export class ChannelsService {
     const channel = invitation.channel;
 
     await this.join(user, channel, null);
-    // 유저가 초대를 수락하면 채널에 자동 입장시키기
   }
 
   async refuseInvitation(userId: number, channelId: number): Promise<void> {
@@ -458,7 +476,8 @@ export class ChannelsService {
       channel,
       user,
     });
-    await this.channelRelationRepository.save(newRelation);
+    const savedRelation = await this.channelRelationRepository.save(newRelation);
+    await this.channelsGateway.joinChannelRoom(savedRelation);
   }
 
   async findChannelRelation(channelId: number, userId: number): Promise<ChannelRelation> {
@@ -470,18 +489,13 @@ export class ChannelsService {
     });
   }
 
-  async findChannelsByUser(userId: number): Promise<any[]> {
+  async findChannelsByUser(userId: number): Promise<ChannelRelation[]> {
     const channelRelations = await this.channelRelationRepository.find({
       where: { user: { id: userId } },
       relations: ['channel'],
     });
 
-    return channelRelations.map((relation) => {
-      return {
-        channel: relation.channel,
-        role: relation.isOwner ? 'Owner' : relation.isAdmin ? 'Admin' : 'User',
-      };
-    });
+    return channelRelations;
   }
 
   async muteUser(channelId: number, mutedUserId: number, actingUserId: number): Promise<void> {
