@@ -87,7 +87,7 @@ export class UserRelationService {
 
   // user-otherUser(status=friend_request)객체 1개, otherUser-user(status=pending_approval) 객체 1개, 총 2개의 객체 생성
   async createFriendRequest(requester: User, recipient: User): Promise<void> {
-    if (requester.id == recipient.id) {
+    if (requester.id === recipient.id) {
       throw new BadRequestException('잘못된 요청입니다.');
     }
     // 내가 상대방과 아무 사이아닐 때 가능함. 상대방이 나를 차단했어도 요청은 할 수 있음(상대입장은 여전히 차단함)

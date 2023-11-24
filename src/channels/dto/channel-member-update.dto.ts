@@ -1,10 +1,10 @@
 import { Expose } from 'class-transformer';
-import { ChannelRelation } from '../entities/channel-relation.entity';
+import { ChannelRelationDto } from './channel-relation.dto';
 
 export class ChannelMemberUpdateDto {
   @Expose()
   channelId: number;
 
   @Expose()
-  channelRelation: ChannelRelation;
+  channelRelation: ChannelRelationDto;
 }
