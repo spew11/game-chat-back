@@ -66,21 +66,22 @@ export class AuthController {
     const accessToken = await this.authService.getAccessToken(state, code, callbackUri);
     const userEmail = await this.authService.getEmail(accessToken);
     const user = await this.usersService.findByEmail(userEmail);
-    if (user) {
-      if (user.is2fa) {
-        res.header('Set-Cookie', [
-          `access_token=${accessToken}; SameSite=None; Secure; Max-Age=720000; HttpOnly=false`,
-        ]);
-        res.send({ redirect: '2FA' });
-      } else {
-        await this.authService.loginUser(req, user);
-        res.send({ redirect: 'home' });
-      }
-    } else {
+    if (!user) {
       res.header('Set-Cookie', [
         `access_token=${accessToken}; SameSite=None; Secure; Max-Age=720000; HttpOnly=false`,
       ]);
       res.send({ redirect: 'register' });
+      return ;
+    }
+    
+    if (user.is2fa){
+      res.header('Set-Cookie', [
+        `access_token=${accessToken}; SameSite=None; Secure; Max-Age=720000; HttpOnly=false`,
+      ]);
+      res.send({ redirect: '2FA' });
+    } else {
+      await this.authService.loginUser(req, user);
+      res.send({ redirect: 'home' });
     }
   }
 
