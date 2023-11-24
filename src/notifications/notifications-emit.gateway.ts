@@ -1,56 +1,25 @@
-import {
-  ConnectedSocket,
-  SubscribeMessage,
-  WebSocketGateway,
-  WebSocketServer,
-} from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Server } from 'socket.io';
 import { User } from 'src/users/user.entity';
-import { Inject, UseFilters, UsePipes, ValidationPipe, forwardRef } from '@nestjs/common';
+import { UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { WebsocketExceptionsFilter } from 'src/filters/websocket-exception.fileter';
 import { corsConfig } from '@configs/cors.config';
-import { UserRelationService } from 'src/user-relation/user-relation.service';
 import { NotificationType } from './enums/notification.enum';
-import { MainGateway } from 'src/commons/main.gateway';
 import { dtoSerializer } from 'src/utils/dtoSerializer.util';
 import { NotiChannelInviteDto } from './dtos/noti-channel-invite.dto';
 import { NotiFriendRequestDto } from './dtos/noti-friend-request.dto';
 import { UserRelation } from 'src/user-relation/user-relation.entity';
 import { ChannelInvitation } from 'src/channels/entities/channel-invitation.entity';
-import { ChannelsService } from 'src/channels/channels.service';
-
-type Noti = NotiChannelInviteDto | NotiFriendRequestDto;
 
 @UseFilters(new WebsocketExceptionsFilter())
 @UsePipes(new ValidationPipe())
 @WebSocketGateway({
   cors: corsConfig,
 })
-export class NotificationsGateway {
+export class NotificationsEmitGateway {
   @WebSocketServer() server: Server;
 
-  constructor(
-    @Inject(forwardRef(() => UserRelationService))
-    private userRelationsService: UserRelationService,
-    @Inject(forwardRef(() => ChannelsService))
-    private channelsService: ChannelsService,
-    private mainGateway: MainGateway,
-  ) {}
-
-  @SubscribeMessage('noti-unread')
-  async getUnreadNoti(@ConnectedSocket() clientSocket: Socket) {
-    const userId = await this.mainGateway.socketToUser(clientSocket.id);
-    const penddings = await this.userRelationsService.findAllPendingApproval(userId);
-    const invitations = await this.channelsService.findAllInvitation(userId);
-
-    const penddingDtos = dtoSerializer(NotiFriendRequestDto, penddings) as Noti[];
-    const invitationDtos = dtoSerializer(NotiChannelInviteDto, invitations) as Noti[];
-
-    const notis = penddingDtos
-      .concat(invitationDtos)
-      .sort((a, b) => a.updatedAt.getTime() - b.updatedAt.getTime());
-    return notis;
-  }
+  constructor() {}
 
   // prettier-ignore
   notiGameInvite(invitedUserId: number, invitingUser: User) {
