@@ -6,14 +6,14 @@ import { UserRelationStatusEnum } from 'src/user-relation/enums/user-relation-st
 import { CreateUserRelationDto } from './dtos/create-user-relation.dto';
 import { User } from 'src/users/user.entity';
 import { In } from 'typeorm';
-import { NotificationsGateway } from 'src/notifications/notifications.gateway';
+import { NotificationsEmitGateway } from 'src/notifications/notifications-emit.gateway';
 
 @Injectable()
 export class UserRelationService {
   constructor(
     @InjectRepository(UserRelation)
     private userRelationRepository: Repository<UserRelation>,
-    private notificationGateway: NotificationsGateway,
+    private notificationEmitGateway: NotificationsEmitGateway,
   ) {}
 
   async deleteFriendship(userId: number, otherUserId: number): Promise<void> {
@@ -107,7 +107,7 @@ export class UserRelationService {
           otherUser: requester,
           status: UserRelationStatusEnum.PENDING_APPROVAL,
         });
-        this.notificationGateway.notiFriendRequest(pendingRelation);
+        this.notificationEmitGateway.notiFriendRequest(pendingRelation);
       }
     } else {
       throw new BadRequestException('잘못된 요청입니다.');
