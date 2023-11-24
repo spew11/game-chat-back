@@ -20,7 +20,7 @@ export class AdminGuard implements CanActivate {
       throw new BadRequestException('유저랑 채널 정보가 없습니다!');
     }
 
-    const relation = await this.channelService.findChannelRelation(channelId, user.id);
+    const relation = await this.channelService.findOneChannelRelation(channelId, user.id);
     if (!relation || (!relation.isAdmin && !relation.isOwner)) {
       throw new ForbiddenException('소유자나 관리자가 아니면 접근할 수 없습니다!');
     }
@@ -42,7 +42,7 @@ export class OwnerGuard implements CanActivate {
       throw new BadRequestException('유저랑 채널 정보가 없습니다!');
     }
 
-    const relation = await this.channelService.findChannelRelation(channelId, user.id);
+    const relation = await this.channelService.findOneChannelRelation(channelId, user.id);
 
     if (!relation || !relation.isOwner) {
       throw new ForbiddenException('소유자가 아니면 접근할 수 없습니다!');

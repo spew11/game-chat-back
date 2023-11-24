@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DirectMessage } from './entitys/direct-message.entity';
 import { DirectMessagesService } from './direct-messages.service';
-import { DirectMessagesGateway } from './direct-messages.gateway';
 import { CommonsModule } from 'src/commons/commons.module';
 import { UserRelationModule } from 'src/user-relation/user-relation.module';
 import { UsersModule } from 'src/users/users.module';
@@ -14,6 +13,7 @@ import { UsersModule } from 'src/users/users.module';
     UserRelationModule,
     CommonsModule,
   ],
-  providers: [DirectMessagesService, DirectMessagesGateway],
+  providers: [DirectMessagesService],
+  exports: [DirectMessagesService],
 })
 export class DirectMessagesModule {}

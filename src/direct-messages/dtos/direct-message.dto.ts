@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import { ShowUserOverviewDto } from 'src/users/dto/show-user-overview.dto';
+import { ShowUserOverviewDto } from 'src/users/dtos/show-user-overview.dto';
 
 export class DirectMessageDto {
   @Expose()

@@ -6,12 +6,14 @@ import { UserRelationStatusEnum } from 'src/user-relation/enums/user-relation-st
 import { CreateUserRelationDto } from './dtos/create-user-relation.dto';
 import { User } from 'src/users/user.entity';
 import { In } from 'typeorm';
+import { NotificationsEmitGateway } from 'src/notifications/notifications-emit.gateway';
 
 @Injectable()
 export class UserRelationService {
   constructor(
     @InjectRepository(UserRelation)
     private userRelationRepository: Repository<UserRelation>,
+    private notificationEmitGateway: NotificationsEmitGateway,
   ) {}
 
   async deleteFriendship(userId: number, otherUserId: number): Promise<void> {
@@ -85,7 +87,7 @@ export class UserRelationService {
 
   // user-otherUser(status=friend_request)객체 1개, otherUser-user(status=pending_approval) 객체 1개, 총 2개의 객체 생성
   async createFriendRequest(requester: User, recipient: User): Promise<void> {
-    if (requester.id == recipient.id) {
+    if (requester.id === recipient.id) {
       throw new BadRequestException('잘못된 요청입니다.');
     }
     // 내가 상대방과 아무 사이아닐 때 가능함. 상대방이 나를 차단했어도 요청은 할 수 있음(상대입장은 여전히 차단함)
@@ -100,11 +102,12 @@ export class UserRelationService {
       });
       if (!recipientSide) {
         // otherUser-user 인스턴스 생성
-        await this.createUserRelation({
+        const pendingRelation = await this.createUserRelation({
           user: recipient,
           otherUser: requester,
           status: UserRelationStatusEnum.PENDING_APPROVAL,
         });
+        this.notificationEmitGateway.notiFriendRequest(pendingRelation);
       }
     } else {
       throw new BadRequestException('잘못된 요청입니다.');
@@ -196,15 +199,31 @@ export class UserRelationService {
     return relations.map((relation) => relation.otherUser);
   }
 
-  async findAllFriendRequests(userId: number): Promise<User[]> {
+  async findAllPendingApproval(userId: number): Promise<UserRelation[]> {
     const relations = await this.userRelationRepository.find({
       where: {
         user: { id: userId },
-        status: UserRelationStatusEnum.FRIEND_REQUEST,
+        status: UserRelationStatusEnum.PENDING_APPROVAL,
       },
-      relations: ['otherUser'],
+      relations: {
+        user: true,
+        otherUser: true,
+      },
     });
-    return relations.map((relation) => relation.otherUser);
+    return relations;
+  }
+
+  async findAllBlockingUsers(blockedUserId: number): Promise<User[]> {
+    const relations = await this.userRelationRepository.find({
+      where: {
+        otherUser: { id: blockedUserId },
+        status: UserRelationStatusEnum.BLOCKED,
+      },
+      relations: {
+        user: true,
+      },
+    });
+    return relations.map((relation) => relation.user);
   }
 
   async unblockUserRelation(userId: number, otherUserId: number): Promise<void> {

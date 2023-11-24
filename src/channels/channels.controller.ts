@@ -31,8 +31,12 @@ export class ChannelsController {
   }
 
   @Get('me')
-  getChannelsByUser(@GetUser() user: User): Promise<any[]> {
-    return this.channelService.findChannelsByUser(user.id);
+  async getChannelsByUser(@GetUser() user: User): Promise<any[]> {
+    const channelRelations = await this.channelService.findChannelsByUser(user.id);
+    return channelRelations.map((relation) => ({
+      channel: relation.channel,
+      role: relation.isOwner ? 'Owner' : relation.isAdmin ? 'Admin' : 'User',
+    }));
   }
 
   @Put(':channel_id')

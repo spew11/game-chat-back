@@ -6,8 +6,8 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { DirectMessageReceiveDto } from './dtos/direct-message-receive.dto';
-import { DirectMessagesService } from './direct-messages.service';
+import { DirectMessageReceiveDto } from '../../direct-messages/dtos/direct-message-receive.dto';
+import { DirectMessagesService } from '../../direct-messages/direct-messages.service';
 import {
   BadRequestException,
   ParseIntPipe,
@@ -19,23 +19,23 @@ import { WebsocketExceptionsFilter } from 'src/filters/websocket-exception.filet
 import { corsConfig } from '@configs/cors.config';
 import { UserRelationService } from 'src/user-relation/user-relation.service';
 import { Serialize } from 'src/interceptors/serializer.interceptor';
-import { DirectMessageDto } from './dtos/direct-message.dto';
-import { plainToInstance } from 'class-transformer';
-import { unreadMassageDto } from './dtos/unread-message.dto';
-import { MainGateway } from 'src/commons/main.gateway';
+import { DirectMessageDto } from '../../direct-messages/dtos/direct-message.dto';
+import { unreadMassageDto } from '../../direct-messages/dtos/unread-message.dto';
+import { RedisService } from 'src/commons/redis-client.service';
+import { dtoSerializer } from 'src/utils/dtoSerializer.util';
 
 @UseFilters(new WebsocketExceptionsFilter())
 @UsePipes(new ValidationPipe())
 @WebSocketGateway({
   cors: corsConfig,
 })
-export class DirectMessagesGateway {
+export class DMListeningGateway {
   @WebSocketServer() server: Server;
 
   constructor(
+    private redisService: RedisService,
     private directMessagesService: DirectMessagesService,
     private userRelationService: UserRelationService,
-    private mainGateWay: MainGateway,
   ) {}
 
   @SubscribeMessage('DM')
@@ -43,16 +43,13 @@ export class DirectMessagesGateway {
     @ConnectedSocket() clientSocket: Socket,
     @MessageBody() { receiverId, content }: DirectMessageReceiveDto,
   ) {
-    const senderId = await this.mainGateWay.socketToUser(clientSocket.id);
+    const senderId = await this.redisService.socketToUser(clientSocket.id);
     if (!(await this.userRelationService.isFriendRelation(senderId, receiverId))) {
       throw new BadRequestException('친구사이에만 dm을 할 수 있습니다.');
     }
 
     const dm = await this.directMessagesService.createMassage(senderId, receiverId, content);
-    const dmDto = plainToInstance(DirectMessageDto, dm, {
-      excludeExtraneousValues: true,
-      enableImplicitConversion: true,
-    });
+    const dmDto = dtoSerializer(DirectMessageDto, dm);
 
     // prettier-ignore
     this.server
@@ -66,7 +63,7 @@ export class DirectMessagesGateway {
     @ConnectedSocket() clientSocket: Socket,
     @MessageBody('senderId', ParseIntPipe) senderId: number,
   ) {
-    const receiverId = await this.mainGateWay.socketToUser(clientSocket.id);
+    const receiverId = await this.redisService.socketToUser(clientSocket.id);
     if (!(await this.userRelationService.isFriendRelation(senderId, receiverId))) {
       throw new BadRequestException('친구사이에만 dm을 사용할 수 있습니다.');
     }
@@ -81,7 +78,7 @@ export class DirectMessagesGateway {
     @ConnectedSocket() clientSocket: Socket,
     @MessageBody('otherUserId', ParseIntPipe) otherUserId: number,
   ) {
-    const userId = await this.mainGateWay.socketToUser(clientSocket.id);
+    const userId = await this.redisService.socketToUser(clientSocket.id);
     if (!(await this.userRelationService.isFriendRelation(userId, otherUserId))) {
       throw new BadRequestException('친구사이에만 dm을 사용할 수 있습니다.');
     }
@@ -93,7 +90,7 @@ export class DirectMessagesGateway {
   @SubscribeMessage('DM-unread-count')
   @Serialize(unreadMassageDto)
   async unReadMessageDirectCount(@ConnectedSocket() clientSocket: Socket) {
-    const userId = await this.mainGateWay.socketToUser(clientSocket.id);
+    const userId = await this.redisService.socketToUser(clientSocket.id);
     const unreadMassagesCount = await this.directMessagesService.getUnreadMsgCount(userId);
 
     return unreadMassagesCount;
