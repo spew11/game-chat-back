@@ -3,10 +3,8 @@ import { User } from './../users/user.entity';
 import {
   BadRequestException,
   ForbiddenException,
-  Inject,
   Injectable,
   NotFoundException,
-  forwardRef,
 } from '@nestjs/common';
 import { Channel, ChannelType } from './entities/channel.entity';
 import { ChannelRelation } from './entities/channel-relation.entity';
@@ -15,8 +13,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ChannelDto } from './dto/channel.dto';
 import * as bcrypt from 'bcrypt';
 import { ChannelInvitation, InvitationStatus } from './entities/channel-invitation.entity';
-import { NotificationsGateway } from 'src/notifications/notifications.gateway';
-import { ChannelsGateway } from './channels.gateway';
+import { NotificationsEmitGateway } from 'src/notifications/notifications-emit.gateway';
+import { ChannelsEmitGateway } from './channels-emit.gateway';
 
 @Injectable()
 export class ChannelsService {
@@ -27,9 +25,8 @@ export class ChannelsService {
     private channelRelationRepository: Repository<ChannelRelation>,
     @InjectRepository(ChannelInvitation)
     private channelInvitationRepository: Repository<ChannelInvitation>,
-    private channelsGateway: ChannelsGateway,
-    @Inject(forwardRef(() => NotificationsGateway))
-    private notificationGateway: NotificationsGateway,
+    private notificationEmitGateway: NotificationsEmitGateway,
+    private channelsEmitGateway: ChannelsEmitGateway,
   ) {}
 
   async createChannel(owner: User, channelDto: ChannelDto): Promise<Channel> {
@@ -128,13 +125,13 @@ export class ChannelsService {
 
       if (earliestOwnerRelation) {
         // 마지막 사람이 나갈 때 남은 유저가 없다면 채널 삭제
-        this.transferOwnership(earliestOwnerRelation);
+        await this.transferOwnership(earliestOwnerRelation);
       } else {
-        this.channelRepository.delete(channelId);
+        await this.channelRepository.delete(channelId);
       }
     }
     // 소켓으로 channelRoom에서 나가고 채널 유저들에게 전파
-    await this.channelsGateway.leaveChannelRoom(user.id, channelId, channelRelation.id);
+    await this.channelsEmitGateway.leaveChannelRoom(user.id, channelId, channelRelation.id);
   }
 
   private async transferOwnership(earliestOwnerRelation: ChannelRelation): Promise<void> {
@@ -195,8 +192,11 @@ export class ChannelsService {
       // ban 전에 kick 처리
       bannedUserRelation.isBanned = true;
       await this.channelRelationRepository.save(bannedUserRelation);
-      await this.channelsGateway.leaveChannelRoom(bannedUserId, channelId, bannedUserRelation.id);
-      this.channelsGateway.emitChannelMemberUpdate(channelId, bannedUserRelation);
+      await this.channelsEmitGateway.leaveChannelRoom(
+        bannedUserId,
+        channelId,
+        bannedUserRelation.id,
+      );
     } else {
       throw new ForbiddenException('관리자는 다른 관리자나 소유자를 ban할 수 없습니다!');
     }
@@ -216,7 +216,6 @@ export class ChannelsService {
     }
 
     await this.channelRelationRepository.remove(channelRelation);
-    await this.channelsGateway.emitChannelMemberUpdate(channelId, channelRelation);
   }
 
   async kickUser(channelId: number, kickedUserId: number, actingUserId: number): Promise<void> {
@@ -245,7 +244,11 @@ export class ChannelsService {
     ) {
       // kick 실시간 소켓 처리
       await this.channelRelationRepository.remove(kickedUserRelation);
-      await this.channelsGateway.leaveChannelRoom(kickedUserId, channelId, kickedUserRelation.id);
+      await this.channelsEmitGateway.leaveChannelRoom(
+        kickedUserId,
+        channelId,
+        kickedUserRelation.id,
+      );
     } else {
       throw new ForbiddenException('관리자는 다른 관리자나 소유자를 kick할 수 없습니다!');
     }
@@ -278,7 +281,7 @@ export class ChannelsService {
 
     requestedUserRelation.isAdmin = updateData.isAdmin;
     await this.channelRelationRepository.save(requestedUserRelation);
-    await this.channelsGateway.emitChannelMemberUpdate(channelId, requestedUserRelation);
+    await this.channelsEmitGateway.emitChannelMemberUpdate(channelId, requestedUserRelation);
   }
 
   async changeOwner(channelId: number, currentOwnerId: number, successorId: number): Promise<void> {
@@ -312,8 +315,8 @@ export class ChannelsService {
     successorRelation.isAdmin = true;
 
     await this.channelRelationRepository.save([currentOwnerRelation, successorRelation]);
-    this.channelsGateway.emitChannelMemberUpdate(channelId, currentOwnerRelation);
-    this.channelsGateway.emitChannelMemberUpdate(channelId, successorRelation);
+    this.channelsEmitGateway.emitChannelMemberUpdate(channelId, currentOwnerRelation);
+    this.channelsEmitGateway.emitChannelMemberUpdate(channelId, successorRelation);
   }
 
   async inviteUser(
@@ -364,7 +367,7 @@ export class ChannelsService {
         status: InvitationStatus.Waiting,
       });
       await this.channelInvitationRepository.save(existingInvitation);
-      await this.notificationGateway.notiChannelInvite(existingInvitation);
+      await this.notificationEmitGateway.notiChannelInvite(existingInvitation);
       return existingInvitation;
     }
     // 유저가 이전에 초대되었지만 refuse했던 경우 status를 waiting으로 수정
@@ -376,7 +379,7 @@ export class ChannelsService {
         status: InvitationStatus.Waiting,
       });
       const savedInvitation = await this.channelInvitationRepository.save(newInvitation);
-      await this.notificationGateway.notiChannelInvite(savedInvitation);
+      await this.notificationEmitGateway.notiChannelInvite(savedInvitation);
       return savedInvitation;
     }
     // 존재하는 초대가 없거나 이전에 초대를 수락했으면 초대 기록 남기기
@@ -477,14 +480,17 @@ export class ChannelsService {
       user,
     });
     const savedRelation = await this.channelRelationRepository.save(newRelation);
-    await this.channelsGateway.joinChannelRoom(savedRelation);
+    await this.channelsEmitGateway.joinChannelRoom(savedRelation);
   }
 
-  async findChannelRelation(channelId: number, userId: number): Promise<ChannelRelation> {
+  async findOneChannelRelation(channelId: number, userId: number): Promise<ChannelRelation> {
     return this.channelRelationRepository.findOne({
       where: {
         channel: { id: channelId },
         user: { id: userId },
+      },
+      relations: {
+        user: true,
       },
     });
   }

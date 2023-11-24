@@ -10,6 +10,7 @@ import { ChannelsModule } from './channels/channels.module';
 import { CommonsModule } from './commons/commons.module';
 import { DirectMessagesModule } from './direct-messages/direct-messages.module';
 import { SecureShieldModule } from './secure-shield/secure-shield.module';
+import { GamesModule } from './games/games.module';
 import { WebsocketListeningModule } from './websocket-listening/websocket-listening.module';
 
 @Module({
@@ -28,6 +29,7 @@ import { WebsocketListeningModule } from './websocket-listening/websocket-listen
     CommonsModule,
     DirectMessagesModule,
     SecureShieldModule,
+    GamesModule,
     WebsocketListeningModule,
   ],
   providers: [TestService],
