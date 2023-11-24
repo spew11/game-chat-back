@@ -80,7 +80,7 @@ export class AuthController {
       ]);
       res.send({ redirect: '2FA' });
     } else {
-      await this.authService.loginUser(req, user);
+      await this.authService.saveSession(req, user);
       res.send({ redirect: 'home' });
     }
   }
@@ -95,7 +95,7 @@ export class AuthController {
     if (accessToken) {
       const userEmail = await this.authService.getEmail(accessToken);
       const newUser = await this.authService.joinUser(userEmail, createUserDto);
-      await this.authService.loginUser(req, newUser);
+      await this.authService.saveSession(req, newUser);
       res.send({ redirect: 'home' });
     } else {
       throw new UnauthorizedException('로그인이 필요합니다.');
@@ -107,7 +107,7 @@ export class AuthController {
   async loginTest(@Req() req: Request, @Res() res: Response, @Param('email') email: string) {
     const user = await this.usersService.findByEmail(email);
     console.log(`exist email: ${email}`);
-    await this.authService.loginUser(req, user);
+    await this.authService.saveSession(req, user);
     res.send(`${email} 로그인 성공`);
   }
 

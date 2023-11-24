@@ -58,7 +58,7 @@ export class AuthService {
     return response.data.email;
   }
 
-  async loginUser(req: Request, user: User): Promise<void> {
+  async saveSession(req: Request, user: User): Promise<void> {
     if (user) {
       // const sessionData = await redisClient.hget(`hash:${user.id}`.toString(), 'email');
       // if (sessionData) {
@@ -115,7 +115,7 @@ export class AuthService {
       if (user.is2fa && user.otpSecret) {
         const otpSecret = this.secureShieldService.decrypt(user.otpSecret);
         if (this.secureShieldService.isValidTotp(totpDto.token, otpSecret)) {
-          await this.loginUser(req, user);
+          await this.saveSession(req, user);
           return true;
         } else {
           return false;
