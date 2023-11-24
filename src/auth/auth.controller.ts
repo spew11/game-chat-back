@@ -68,6 +68,9 @@ export class AuthController {
     const user = await this.usersService.findByEmail(userEmail);
     if (user) {
       if (user.is2fa) {
+        res.header('Set-Cookie', [
+          `access_token=${accessToken}; SameSite=None; Secure; Max-Age=720000; HttpOnly=false`,
+        ]);
         res.send({ redirect: '2FA' });
       } else {
         await this.authService.loginUser(req, user);
