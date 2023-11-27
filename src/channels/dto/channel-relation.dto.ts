@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import { User } from 'src/users/user.entity';
+import { ShowUserOverviewDto } from 'src/users/dtos/show-user-overview.dto';
 
 export class ChannelRelationDto {
   @Expose()
@@ -18,5 +18,5 @@ export class ChannelRelationDto {
   // muteUntil: Date;
 
   @Expose()
-  user: User;
+  user: ShowUserOverviewDto;
 }

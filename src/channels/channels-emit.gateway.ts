@@ -20,7 +20,9 @@ export class ChannelsEmitGateway {
 
   emitChannelMemberUpdate(channelId: number, channelRelation: ChannelRelation) {
     const dto = dtoSerializer(ChannelMemberUpdateDto, {
-      channelId,
+      channel: {
+        id: channelId,
+      },
       channelRelation,
     });
     // prettier-ignore
@@ -32,7 +34,7 @@ export class ChannelsEmitGateway {
   async joinChannelRoom(channelRelation: ChannelRelation) {
     // 보다 엄격한 channelRelation 타입 체크 필요
     const userId = channelRelation.user.id;
-    const channelId = channelRelation.channel.id;
+    const channel = channelRelation.channel;
 
     const clientSocketId = await this.redisService.userToSocket(userId);
     if (!clientSocketId) {
@@ -42,20 +44,20 @@ export class ChannelsEmitGateway {
     if (!clientSocket) {
       throw new NotFoundException('해당socketId의 socket을 찾을수 없습니다.: joinChannelRoom');
     }
-    clientSocket.join(channelId.toString());
+    clientSocket.join(channel.id.toString());
 
     const dto = dtoSerializer(ChannelMemberUpdateDto, {
-      channelId,
+      channel,
       channelRelation,
     });
 
     // prettier-ignore
     this.server
-      .to(channelId.toString())
+      .to(channel.id.toString())
       .emit('channel-in', dto);
   }
 
-  async leaveChannelRoom(userId: number, channelId: number, channelRelationId: number) {
+  async leaveChannelRoom(userId: number, channelId: number) {
     const clientSocketId = await this.redisService.userToSocket(userId);
     if (!clientSocketId) {
       throw new NotFoundException('해당유저의 socket을 찾을수 없습니다.: leaveChannelRoom');
@@ -70,8 +72,12 @@ export class ChannelsEmitGateway {
     this.server
       .to(channelId.toString())
       .emit('channel-out', {
-        channelId,
-        channelRelationId
+        channel: {
+          id: channelId,
+        },
+        user: {
+          id: userId
+        }
       });
   }
 }

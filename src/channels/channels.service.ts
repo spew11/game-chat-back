@@ -131,7 +131,7 @@ export class ChannelsService {
       }
     }
     // 소켓으로 channelRoom에서 나가고 채널 유저들에게 전파
-    await this.channelsEmitGateway.leaveChannelRoom(user.id, channelId, channelRelation.id);
+    await this.channelsEmitGateway.leaveChannelRoom(user.id, channelId);
   }
 
   private async transferOwnership(earliestOwnerRelation: ChannelRelation): Promise<void> {
@@ -192,11 +192,7 @@ export class ChannelsService {
       // ban 전에 kick 처리
       bannedUserRelation.isBanned = true;
       await this.channelRelationRepository.save(bannedUserRelation);
-      await this.channelsEmitGateway.leaveChannelRoom(
-        bannedUserId,
-        channelId,
-        bannedUserRelation.id,
-      );
+      await this.channelsEmitGateway.leaveChannelRoom(bannedUserId, channelId);
     } else {
       throw new ForbiddenException('관리자는 다른 관리자나 소유자를 ban할 수 없습니다!');
     }
@@ -244,11 +240,7 @@ export class ChannelsService {
     ) {
       // kick 실시간 소켓 처리
       await this.channelRelationRepository.remove(kickedUserRelation);
-      await this.channelsEmitGateway.leaveChannelRoom(
-        kickedUserId,
-        channelId,
-        kickedUserRelation.id,
-      );
+      await this.channelsEmitGateway.leaveChannelRoom(kickedUserId, channelId);
     } else {
       throw new ForbiddenException('관리자는 다른 관리자나 소유자를 kick할 수 없습니다!');
     }
@@ -433,6 +425,7 @@ export class ChannelsService {
       },
       relations: {
         user: true,
+        channel: true,
       },
     });
   }
