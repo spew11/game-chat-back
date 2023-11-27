@@ -1,5 +1,5 @@
 export enum NotificationType {
-  GAME_INVITE = 'gameInvite',
-  CHANNEL_INVITE = 'channelInvite',
-  FRIEND_REQUEST = 'friendRequest',
+  GAME_INVITE = 'game-invite',
+  CHANNEL_INVITE = 'channel-invite',
+  FRIEND_REQUEST = 'friend-request',
 }

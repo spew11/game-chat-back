@@ -8,7 +8,7 @@ export class NotiFriendRequestDto {
   type: NotificationType;
 
   @Expose({ name: 'otherUser' })
-  requestringUser: ShowUserOverviewDto;
+  requestingUser: ShowUserOverviewDto;
 
   @Expose()
   updatedAt: Date;

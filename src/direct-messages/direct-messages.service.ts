@@ -26,6 +26,7 @@ export class DirectMessagesService {
       where: { hashKey },
       relations: {
         sender: true,
+        receiver: true,
       },
       order: {
         createdAt: 'ASC',

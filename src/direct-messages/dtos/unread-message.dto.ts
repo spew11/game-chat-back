@@ -1,8 +1,14 @@
 import { Expose, Transform } from 'class-transformer';
+import { ShowUserOverviewDto } from 'src/users/dtos/show-user-overview.dto';
 
 export class unreadMassageDto {
   @Expose({ name: 'message_sender_id' })
-  senderId: number;
+  @Transform(({ value }) => {
+    return {
+      id: value,
+    };
+  })
+  sender: ShowUserOverviewDto;
 
   @Expose()
   @Transform(({ value }) => (parseInt(value) ? parseInt(value) : 0))
