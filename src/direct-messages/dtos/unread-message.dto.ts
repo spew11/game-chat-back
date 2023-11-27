@@ -5,9 +5,7 @@ export class unreadMassageDto {
   @Expose({ name: 'message_sender_id' })
   @Transform(({ value }) => {
     return {
-      sender: {
-        id: value,
-      },
+      id: value,
     };
   })
   sender: ShowUserOverviewDto;
