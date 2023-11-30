@@ -25,7 +25,12 @@ import { ChannelRelation } from './entities/channel-relation.entity';
 import { ChannelMemberUpdateDto } from './dto/channel-member-update.dto';
 import { ChannelInvitation } from './entities/channel-invitation.entity';
 import { NotiChannelInviteDto } from 'src/notifications/dtos/noti-channel-invite.dto';
-import { SocketConnectionGateway } from 'src/socket-connection/socket-connection.gateway';
+import {
+  SocketConnectionGateway,
+  privatePrefix,
+} from 'src/socket-connection/socket-connection.gateway';
+
+const channelPrefix = 'channel';
 
 @UseFilters(new WebsocketExceptionsFilter())
 @UsePipes(new ValidationPipe())
@@ -51,7 +56,9 @@ export class ChannelGateway {
     }
 
     const channelRelations = await this.channelsService.findChannelsByUser(userId);
-    channelRelations.forEach((relation) => clientSocket.join(relation.channel.id.toString()));
+    channelRelations.forEach((relation) =>
+      clientSocket.join(channelPrefix + relation.channel.id.toString()),
+    );
   }
 
   @SubscribeMessage('channel-message')
@@ -66,7 +73,7 @@ export class ChannelGateway {
     }
 
     const blockingUsers = await this.userRelationService.findAllBlockingUsers(senderId);
-    const channelRoom = this.server.to(channelId.toString());
+    const channelRoom = this.server.to(channelPrefix + channelId.toString());
     const channelRoomWithoutBlock = blockingUsers.reduce(
       (room, user) => room.except(user.id.toString()),
       channelRoom,
@@ -92,7 +99,7 @@ export class ChannelGateway {
     });
     // prettier-ignore
     this.server
-      .to(channelId.toString())
+      .to(channelPrefix + channelId.toString())
       .emit('channel-member', MemberUpdatedto);
   }
 
@@ -105,7 +112,7 @@ export class ChannelGateway {
       throw new NotFoundException('user의 socket을 찾을수 없습니다.: joinChannelRoom');
     }
 
-    clientSocket.join(channel.id.toString());
+    clientSocket.join(channelPrefix + channel.id.toString());
 
     const MemberUpdatedto = dtoSerializer(ChannelMemberUpdateDto, {
       channel,
@@ -113,7 +120,7 @@ export class ChannelGateway {
     });
     // prettier-ignore
     this.server
-      .to(channel.id.toString())
+      .to(channelPrefix + channel.id.toString())
       .emit('channel-in', MemberUpdatedto);
   }
 
@@ -123,11 +130,11 @@ export class ChannelGateway {
       throw new NotFoundException('user의 socket을 찾을수 없습니다.: leaveChannelRoom');
     }
 
-    clientSocket.leave(channelId.toString());
+    clientSocket.leave(channelPrefix + channelId.toString());
 
     // prettier-ignore
     this.server
-      .to(channelId.toString())
+      .to(channelPrefix + channelId.toString())
       .emit('channel-out', {
         channel: {
           id: channelId,
@@ -141,9 +148,10 @@ export class ChannelGateway {
   // prettier-ignore
   notiChannelInvite(invitation: ChannelInvitation) {
       const invitedUserId = invitation.user.id.toString()
+      console.log()
       const noti = dtoSerializer(NotiChannelInviteDto, invitation)
       this.server
-        .to(invitedUserId)
+        .to(privatePrefix + invitedUserId)
         .emit('noti', noti);
     }
 }

@@ -8,6 +8,8 @@ import { WebsocketExceptionsFilter } from '../filters/websocket-exception.filete
 import { corsConfig } from '@configs/cors.config';
 import { RedisField } from 'src/commons/enums/redis.enum';
 
+export const privatePrefix = 'private';
+
 @UseFilters(new WebsocketExceptionsFilter())
 @WebSocketGateway({
   cors: corsConfig,
@@ -40,7 +42,7 @@ export class SocketConnectionGateway {
       // 상대 session만료시키기?
     }
 
-    clientSocket.join(userId.toString());
+    clientSocket.join(privatePrefix + userId.toString());
     this.initClientRedis(clientSocket.id, userId);
   }
 
