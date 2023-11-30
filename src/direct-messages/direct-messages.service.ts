@@ -3,7 +3,7 @@ import { DirectMessage } from './entitys/direct-message.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
-import { unreadMassageDto } from './dtos/unread-message.dto';
+import { unreadMassageRawDto } from './dtos/unread-message-raw.dto';
 
 @Injectable()
 export class DirectMessagesService {
@@ -78,7 +78,7 @@ export class DirectMessagesService {
       .andWhere('message.isRead = false')
       .groupBy('message.sender.id')
       .select(['message.sender.id', 'COUNT(*) as count'])
-      .getRawMany()) as unreadMassageDto[];
+      .getRawMany()) as unreadMassageRawDto[];
 
     return result;
   }

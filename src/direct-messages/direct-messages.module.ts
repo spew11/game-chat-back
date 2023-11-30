@@ -5,6 +5,8 @@ import { DirectMessagesService } from './direct-messages.service';
 import { CommonsModule } from 'src/commons/commons.module';
 import { UserRelationModule } from 'src/user-relation/user-relation.module';
 import { UsersModule } from 'src/users/users.module';
+import { DirectMessagesGateway } from './direct-messages.gateway';
+import { SocketConnectionModule } from 'src/socket-connection/socket-connection.module';
 
 @Module({
   imports: [
@@ -12,8 +14,8 @@ import { UsersModule } from 'src/users/users.module';
     UsersModule,
     UserRelationModule,
     CommonsModule,
+    SocketConnectionModule,
   ],
-  providers: [DirectMessagesService],
-  exports: [DirectMessagesService],
+  providers: [DirectMessagesService, DirectMessagesGateway],
 })
 export class DirectMessagesModule {}
