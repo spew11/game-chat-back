@@ -6,7 +6,7 @@ import { UserRelation } from './user-relation.entity';
 import { NotiFriendRequestDto } from '../notifications/dtos/noti-friend-request.dto';
 import { dtoSerializer } from 'src/utils/dtoSerializer.util';
 import { Server } from 'socket.io';
-import { privatePrefix } from 'src/socket-connection/socket-connection.gateway';
+import { PRIVAVE_PREFIX } from 'src/socket-connection/socket-connection.gateway';
 
 @UseFilters(new WebsocketExceptionsFilter())
 @UsePipes(new ValidationPipe())
@@ -21,7 +21,7 @@ export class UserRelationGateway {
       const requestedUserId = pendingRelation.user.id.toString()
       const noti = dtoSerializer(NotiFriendRequestDto, pendingRelation)
       this.server
-        .to(privatePrefix + requestedUserId)
+        .to(PRIVAVE_PREFIX + requestedUserId)
         .emit('noti', noti)
     }
 }

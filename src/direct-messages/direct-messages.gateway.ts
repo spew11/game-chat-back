@@ -24,7 +24,7 @@ import { unreadMassageDto } from './dtos/unread-message.dto';
 import { dtoSerializer } from 'src/utils/dtoSerializer.util';
 import {
   SocketConnectionGateway,
-  privatePrefix,
+  PRIVAVE_PREFIX,
 } from 'src/socket-connection/socket-connection.gateway';
 
 @UseFilters(new WebsocketExceptionsFilter())
@@ -56,8 +56,8 @@ export class DirectMessagesGateway {
 
     // prettier-ignore
     this.server
-      .to(privatePrefix + receiverId.toString())
-      .to(privatePrefix + senderId.toString())
+      .to(PRIVAVE_PREFIX + receiverId.toString())
+      .to(PRIVAVE_PREFIX + senderId.toString())
       .emit('DM', messageDto);
   }
 
