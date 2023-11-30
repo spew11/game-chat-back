@@ -5,12 +5,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRelation } from './user-relation.entity';
 import { User } from 'src/users/user.entity';
 import { UsersModule } from 'src/users/users.module';
-import { NotificationsModule } from 'src/notifications/notifications.module';
+import { UserRelationGateway } from './user-relation.gateway';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserRelation, User]), UsersModule, NotificationsModule],
+  imports: [TypeOrmModule.forFeature([UserRelation, User]), UsersModule],
   controllers: [UserRelationController],
-  providers: [UserRelationService],
-  exports: [TypeOrmModule.forFeature([UserRelation]), UserRelationService],
+  providers: [UserRelationService, UserRelationGateway],
+  exports: [TypeOrmModule, UserRelationService],
 })
 export class UserRelationModule {}

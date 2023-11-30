@@ -43,23 +43,4 @@ export class RedisService {
 
     return this.redisClient.hdel(formattedKey, field);
   }
-
-  async socketToUser(socketId: string): Promise<number> {
-    const userId = parseInt(await this.hget(socketId, RedisField.SOCKET_TO_USER));
-    return userId;
-  }
-
-  async userToSocket(userId: number): Promise<string | null> {
-    const socketId = await this.hget(userId, RedisField.USER_TO_SOCKER);
-    return socketId;
-  }
-
-  async getUserIdBySession(clientSocket: Socket): Promise<number | undefined> {
-    let session = clientSocket.request.session;
-    if (!session.userId) {
-      const sessionId = clientSocket.request.headers.authorization;
-      session = JSON.parse(await this.client.get('session:' + sessionId));
-    }
-    return session?.userId;
-  }
 }

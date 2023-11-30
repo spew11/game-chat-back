@@ -10,25 +10,27 @@ import { ChannelsModule } from './channels/channels.module';
 import { CommonsModule } from './commons/commons.module';
 import { DirectMessagesModule } from './direct-messages/direct-messages.module';
 import { SecureShieldModule } from './secure-shield/secure-shield.module';
-import { WebsocketListeningModule } from './websocket-listening/websocket-listening.module';
+import { SocketConnectionModule } from './socket-connection/socket-connection.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
-    AuthModule,
     TypeOrmModule.forRootAsync({
       useClass: TypeORMConfigProvider,
     }),
-    UserRelationModule,
-    UsersModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
     }),
+    AuthModule,
+    UserRelationModule,
+    UsersModule,
     ChannelsModule,
     CommonsModule,
     DirectMessagesModule,
     SecureShieldModule,
-    WebsocketListeningModule,
+    SocketConnectionModule,
+    NotificationsModule,
   ],
   providers: [TestService],
 })
