@@ -19,6 +19,7 @@ import { UserByIdPipe } from 'src/pipes/UserById.pipe';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { AdminGuard, OwnerGuard } from './channels.guard';
 import { ChannelInvitation } from './entities/channel-invitation.entity';
+import { ChannelInfoDto } from './dto/channel-info.dto';
 
 @UseGuards(AuthGuard)
 @Controller('channels')
@@ -33,10 +34,14 @@ export class ChannelsController {
   @Get('me')
   async getChannelsByUser(@GetUser() user: User): Promise<any[]> {
     const channelRelations = await this.channelService.findChannelsByUser(user.id);
-    return channelRelations.map((relation) => ({
-      channel: relation.channel,
-      role: relation.isOwner ? 'Owner' : relation.isAdmin ? 'Admin' : 'User',
-    }));
+    return channelRelations.map((relation) => {
+      return {
+        id: relation.channel.id,
+        title: relation.channel.title,
+        type: relation.channel.type,
+        role: relation.isOwner ? 'Owner' : relation.isAdmin ? 'Admin' : 'User',
+      };
+    });
   }
 
   @Put(':channel_id')
@@ -49,12 +54,14 @@ export class ChannelsController {
   }
 
   @Get(':channel_id')
-  getOneChannelWithUsers(@Param('channel_id', ParseIntPipe) channelId: number): Promise<Channel> {
+  getOneChannelWithUsers(
+    @Param('channel_id', ParseIntPipe) channelId: number,
+  ): Promise<ChannelInfoDto> {
     return this.channelService.findOneChannelWithUsers(channelId);
   }
 
   @Get()
-  getAllChannels(): Promise<Channel[]> {
+  getAllChannels(): Promise<ChannelInfoDto[]> {
     return this.channelService.findAllChannels();
   }
 
