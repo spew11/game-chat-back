@@ -101,11 +101,13 @@ export class ChannelsService {
       throw new NotFoundException('채널을 찾을 수 없습니다!');
     }
 
+    const filteredRelations = channelWithUsers.channelRelations.filter(relation => !relation.isBanned);
+
     return {
       id: channelWithUsers.id,
       title: channelWithUsers.title,
       type: channelWithUsers.type,
-      users: channelWithUsers.channelRelations.map((relation) => relation.user),
+      users: filteredRelations.map(relation => relation.user),
     };
   }
 

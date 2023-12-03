@@ -34,13 +34,16 @@ export class ChannelsController {
   @Get('me')
   async getChannelsByUser(@GetUser() user: User): Promise<any[]> {
     const channelRelations = await this.channelService.findChannelsByUser(user.id);
-    return channelRelations.map((relation) => {
-      return {
-        id: relation.channel.id,
-        title: relation.channel.title,
-        type: relation.channel.type,
-        role: relation.isOwner ? 'Owner' : relation.isAdmin ? 'Admin' : 'User',
-      };
+
+    const filteredRelations = channelRelations.filter(relation => !relation.isBanned);
+
+    return filteredRelations.map((relation) => {
+        return {
+            id: relation.channel.id,
+            title: relation.channel.title,
+            type: relation.channel.type,
+            role: relation.isOwner ? 'Owner' : relation.isAdmin ? 'Admin' : 'User',
+        };
     });
   }
 
