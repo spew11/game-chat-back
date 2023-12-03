@@ -76,13 +76,9 @@ export class ChannelsService {
     return bcrypt.hash(password, salt);
   }
 
-  async findAllChannels(): Promise<ChannelInfoDto[]> {
+  async findAllChannels(): Promise<Channel[]> {
     const channels = await this.channelRepository.find();
-    return channels.map((channel) => ({
-      id: channel.id,
-      title: channel.title,
-      type: channel.type,
-    }));
+    return channels;
   }
 
   async findOneChannel(channelId: number): Promise<Channel> {
@@ -91,9 +87,14 @@ export class ChannelsService {
     return channel;
   }
 
-  async findOneChannelWithUsers(channelId: number): Promise<ChannelInfoDto> {
+  async findOneChannelWithUsers(channelId: number): Promise<Channel> {
     const channelWithUsers = await this.channelRepository.findOne({
-      where: { id: channelId },
+      where: {
+        id: channelId,
+        channelRelations: {
+          isBanned: false,
+        },
+      },
       relations: ['channelRelations', 'channelRelations.user'],
     });
 
@@ -101,12 +102,7 @@ export class ChannelsService {
       throw new NotFoundException('채널을 찾을 수 없습니다!');
     }
 
-    return {
-      id: channelWithUsers.id,
-      title: channelWithUsers.title,
-      type: channelWithUsers.type,
-      users: channelWithUsers.channelRelations.map((relation) => relation.user),
-    };
+    return channelWithUsers;
   }
 
   async exitChannel(user: User, channelId: number): Promise<void> {
@@ -292,6 +288,10 @@ export class ChannelsService {
 
     if (!updateData.isAdmin && !requestedUserRelation.isAdmin) {
       throw new ForbiddenException('이미 관리자 권한이 없는 유저입니다!');
+    }
+
+    if (updateData.isAdmin && requestedUserRelation.isAdmin) {
+      throw new ForbiddenException('이미 관리자입니다!');
     }
 
     requestedUserRelation.isAdmin = updateData.isAdmin;
@@ -513,7 +513,7 @@ export class ChannelsService {
 
   async findChannelsByUser(userId: number): Promise<ChannelRelation[]> {
     const channelRelations = await this.channelRelationRepository.find({
-      where: { user: { id: userId } },
+      where: { user: { id: userId }, isBanned: false },
       relations: ['channel'],
     });
 
