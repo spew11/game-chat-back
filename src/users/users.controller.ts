@@ -37,6 +37,7 @@ export class UsersController {
     userDto.email = user.email;
     userDto.ladderPoint = user.ladderPoint;
     userDto.nickname = user.nickname;
+    userDto.is2fa = user.is2fa;
     return userDto;
   }
 
