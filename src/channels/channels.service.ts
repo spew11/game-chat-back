@@ -107,7 +107,11 @@ export class ChannelsService {
       id: channelWithUsers.id,
       title: channelWithUsers.title,
       type: channelWithUsers.type,
-      users: filteredRelations.map(relation => relation.user),
+      users: filteredRelations.map(relation => ({
+          id: relation.user.id,
+          nickname: relation.user.nickname,
+          role: relation.isOwner ? 'Owner' : relation.isAdmin ? 'Admin' : 'User'
+      })),
     };
   }
 

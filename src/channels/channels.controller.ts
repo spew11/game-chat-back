@@ -77,7 +77,6 @@ export class ChannelsController {
   }
 
   @Get(':channel_id/ban')
-  @UseGuards(AdminGuard)
   getAllChannelBannedUsers(@Param('channel_id', ParseIntPipe) channelId: number): Promise<User[]> {
     return this.channelService.findAllChannelBannedUsers(channelId);
   }
