@@ -71,10 +71,10 @@ export class AuthController {
         `access_token=${accessToken}; SameSite=None; Secure; Max-Age=720000; HttpOnly=false`,
       ]);
       res.send({ redirect: 'register' });
-      return ;
+      return;
     }
-    
-    if (user.is2fa){
+
+    if (user.is2fa) {
       res.header('Set-Cookie', [
         `access_token=${accessToken}; SameSite=None; Secure; Max-Age=720000; HttpOnly=false`,
       ]);

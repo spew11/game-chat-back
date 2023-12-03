@@ -8,6 +8,7 @@ import { GetUser } from 'src/auth/user.decorator';
 import { User } from './user.entity';
 import { UserByIdPipe } from 'src/pipes/UserById.pipe';
 import { ShowUserInforamtionDto } from './dtos/show-user-information';
+import { Serialize } from 'src/interceptors/serializer.interceptor';
 
 @UseGuards(AuthGuard)
 @Controller('users')
@@ -15,40 +16,21 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get()
-  async getUsersOverview(): Promise<ShowUserOverviewDto[]> {
-    const users = await this.usersService.findAllUsers();
-    const userDtos: ShowUserOverviewDto[] = users.map((user) => {
-      const userDto = new ShowUserOverviewDto();
-      userDto.id = user.id;
-      userDto.avatar = user.avatar;
-      userDto.ladderPoint = user.ladderPoint;
-      userDto.nickname = user.nickname;
-      return userDto;
-    });
-    return userDtos;
+  @Serialize(ShowUserOverviewDto)
+  getUsersOverview(): Promise<ShowUserOverviewDto[]> {
+    return this.usersService.findAllUsers();
   }
 
   @Get('me')
+  @Serialize(ShowUserInforamtionDto)
   getUserInfomation(@GetUser() user: User): ShowUserInforamtionDto {
-    const userDto = new ShowUserInforamtionDto();
-    userDto.id = user.id;
-    userDto.avatar = user.avatar;
-    userDto.bio = user.bio;
-    userDto.email = user.email;
-    userDto.ladderPoint = user.ladderPoint;
-    userDto.nickname = user.nickname;
-    return userDto;
+    return user;
   }
 
   @Get(':user_id')
+  @Serialize(ShowUserDetailsDto)
   getUserDetails(@Param('user_id', UserByIdPipe) user: User): ShowUserDetailsDto {
-    const userDto = new ShowUserDetailsDto();
-    userDto.avatar = user.avatar;
-    userDto.bio = user.bio;
-    userDto.email = user.email;
-    userDto.ladderPoint = user.ladderPoint;
-    userDto.nickname = user.nickname;
-    return userDto;
+    return user;
   }
 
   @Put('me')

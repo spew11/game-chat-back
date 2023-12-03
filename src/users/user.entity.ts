@@ -24,7 +24,7 @@ export class User {
   })
   avatar: AvatarEnum;
 
-  @Column({ type: 'varchar', length: 256, nullable: true })
+  @Column({ nullable: true })
   bio: string;
 
   @Column({ default: false })

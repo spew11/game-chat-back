@@ -1,11 +1,12 @@
 import { Controller, Param, Post, Delete, Get, Put, UseGuards } from '@nestjs/common';
 import { UserRelationService } from './user-relation.service';
 import { ShowFriendRelationsDto } from './dtos/show-friend-relations.dto';
-import { ShowBlockedUsersDto } from './dtos/show-blocked-users.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/user.decorator';
 import { User } from 'src/users/user.entity';
 import { UserByIdPipe } from 'src/pipes/UserById.pipe';
+import { Serialize } from 'src/interceptors/serializer.interceptor';
+import { ShowUserIdDto } from './dtos/show-user-id.dto';
 
 @UseGuards(AuthGuard)
 @Controller('user-relation')
@@ -13,29 +14,15 @@ export class UserRelationController {
   constructor(private userRelationService: UserRelationService) {}
 
   @Get('friends/relations')
-  async getRelationList(@GetUser() user: User): Promise<ShowFriendRelationsDto[]> {
-    const relations = await this.userRelationService.findAllFriendRelations(user.id);
-    const showFriendRelationsDtos: ShowFriendRelationsDto[] = relations.map((relation) => {
-      const showFriendRelationsDto = new ShowFriendRelationsDto();
-      showFriendRelationsDto.otherUserId = relation.otherUser.id;
-      showFriendRelationsDto.nickname = relation.otherUser.nickname;
-      showFriendRelationsDto.status = relation.status;
-      return showFriendRelationsDto;
-    });
-    return showFriendRelationsDtos;
+  @Serialize(ShowFriendRelationsDto)
+  getRelationList(@GetUser() user: User): Promise<ShowFriendRelationsDto[]> {
+    return this.userRelationService.findAllFriendRelations(user.id);
   }
 
   @Get('friends')
-  async getFriendsList(@GetUser() user: User): Promise<ShowFriendRelationsDto[]> {
-    const relations = await this.userRelationService.findAllFriends(user.id);
-    const showFriendRelationsDtos: ShowFriendRelationsDto[] = relations.map((relation) => {
-      const showFriendRelationsDto = new ShowFriendRelationsDto();
-      showFriendRelationsDto.otherUserId = relation.otherUser.id;
-      showFriendRelationsDto.nickname = relation.otherUser.nickname;
-      showFriendRelationsDto.status = relation.status;
-      return showFriendRelationsDto;
-    });
-    return showFriendRelationsDtos;
+  @Serialize(ShowUserIdDto)
+  getFriendsList(@GetUser() user: User): Promise<ShowUserIdDto[]> {
+    return this.userRelationService.findAllFriends(user.id);
   }
 
   @Post('friends/:user_id/request')
@@ -75,14 +62,8 @@ export class UserRelationController {
   }
 
   @Get('block')
-  async getblockList(@GetUser() user: User): Promise<ShowBlockedUsersDto[]> {
-    const blockedUsers = await this.userRelationService.findAllBlockedUsers(user.id);
-    const userDtos: ShowBlockedUsersDto[] = blockedUsers.map((blockedUser) => {
-      const userDto = new ShowBlockedUsersDto();
-      userDto.otherUserId = blockedUser.id;
-      userDto.nickname = blockedUser.nickname;
-      return userDto;
-    });
-    return userDtos;
+  @Serialize(ShowUserIdDto)
+  getblockList(@GetUser() user: User): Promise<ShowUserIdDto[]> {
+    return this.userRelationService.findAllBlockedUsers(user.id);
   }
 }
