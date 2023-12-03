@@ -18,8 +18,11 @@ import { Channel } from './entities/channel.entity';
 import { UserByIdPipe } from 'src/pipes/UserById.pipe';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { AdminGuard, OwnerGuard } from './channels.guard';
-import { ChannelInvitation } from './entities/channel-invitation.entity';
 import { ChannelInfoDto } from './dto/channel-info.dto';
+import { ChannelRoleDto } from './dto/channel-role.dto';
+import { ChannelWithUsersDto } from './dto/channel-with-user.dto';
+import { UserInfoDto } from './dto/channel-user-info.dto';
+import { ChannelInvitationDto } from './dto/channel-invitation.dto';
 
 @UseGuards(AuthGuard)
 @Controller('channels')
@@ -27,17 +30,24 @@ export class ChannelsController {
   constructor(private readonly channelService: ChannelsService) {}
 
   @Post()
-  createChannel(@GetUser() user: User, @Body() channelDto: ChannelDto): Promise<Channel> {
-    return this.channelService.createChannel(user, channelDto);
+  async createChannel(
+    @GetUser() user: User,
+    @Body() channelDto: ChannelDto
+  ): Promise<ChannelInfoDto> {
+    const newChannel = await this.channelService.createChannel(user, channelDto);
+
+    return {
+      id: newChannel.id,
+      title: newChannel.title,
+      type: newChannel.type,
+    };
   }
 
   @Get('me')
-  async getChannelsByUser(@GetUser() user: User): Promise<any[]> {
+  async getChannelsByUser(@GetUser() user: User): Promise<ChannelRoleDto[]> {
     const channelRelations = await this.channelService.findChannelsByUser(user.id);
 
-    const filteredRelations = channelRelations.filter(relation => !relation.isBanned);
-
-    return filteredRelations.map((relation) => {
+    return channelRelations.map((relation) => {
         return {
             id: relation.channel.id,
             title: relation.channel.title,
@@ -49,23 +59,46 @@ export class ChannelsController {
 
   @Put(':channel_id')
   @UseGuards(OwnerGuard)
-  updateChannel(
+  async updateChannel(
     @Param('channel_id', ChannelByIdPipe) channel: Channel,
     @Body() channelDto: ChannelDto,
-  ): Promise<Channel> {
-    return this.channelService.updateChannel(channel, channelDto);
+  ): Promise<ChannelInfoDto> {
+    const updatedChannel = await this.channelService.updateChannel(channel, channelDto);
+
+    return {
+      id: updatedChannel.id,
+      title: updatedChannel.title,
+      type: updatedChannel.type,
+    };
   }
 
   @Get(':channel_id')
-  getOneChannelWithUsers(
+  async getOneChannelWithUsers(
     @Param('channel_id', ParseIntPipe) channelId: number,
-  ): Promise<ChannelInfoDto> {
-    return this.channelService.findOneChannelWithUsers(channelId);
+  ): Promise<ChannelWithUsersDto> {
+    const channelWithUsers = await this.channelService.findOneChannelWithUsers(channelId);
+
+    return {
+      id: channelWithUsers.id,
+      title: channelWithUsers.title,
+      type: channelWithUsers.type,
+      users: channelWithUsers.channelRelations.map(relation => ({
+        id: relation.user.id,
+        nickname: relation.user.nickname,
+        role: relation.isOwner ? 'Owner' : relation.isAdmin ? 'Admin' : 'User'
+      })),
+    };
   }
 
   @Get()
-  getAllChannels(): Promise<ChannelInfoDto[]> {
-    return this.channelService.findAllChannels();
+  async getAllChannels(): Promise<ChannelInfoDto[]> {
+    const channels = await this.channelService.findAllChannels();
+
+    return channels.map(channel => ({
+      id: channel.id,
+      title: channel.title,
+      type: channel.type,
+    }));
   }
 
   @Delete(':channel_id')
@@ -77,8 +110,15 @@ export class ChannelsController {
   }
 
   @Get(':channel_id/ban')
-  getAllChannelBannedUsers(@Param('channel_id', ParseIntPipe) channelId: number): Promise<User[]> {
-    return this.channelService.findAllChannelBannedUsers(channelId);
+  async getAllChannelBannedUsers(
+    @Param('channel_id', ParseIntPipe) channelId: number
+  ): Promise<UserInfoDto[]> {
+    const bannedUsers = await this.channelService.findAllChannelBannedUsers(channelId);
+
+    return bannedUsers.map(user => ({
+      id: user.id,
+      nickname: user.nickname
+    }));
   }
 
   @Post(':channel_id/ban/:user_id')
@@ -139,12 +179,24 @@ export class ChannelsController {
   }
 
   @Post(':channel_id/invite/:user_id')
-  inviteUser(
+  async inviteUser(
     @Param('channel_id', ChannelByIdPipe) channel: Channel,
     @Param('user_id', UserByIdPipe) invitedUser: User,
     @GetUser() actingUser: User,
-  ): Promise<ChannelInvitation> {
-    return this.channelService.inviteUser(channel, invitedUser, actingUser);
+  ): Promise<ChannelInvitationDto> {
+    const invitation = await this.channelService.inviteUser(channel, invitedUser, actingUser);
+
+    return {
+      user: {
+        id: invitation.user.id,
+        nickname: invitation.user.nickname
+      },
+      channel: {
+        id: invitation.channel.id,
+        title: invitation.channel.title,
+        type: invitation.channel.type,
+      }
+    };
   }
 
   @Post(':channel_id/accept-invite')
