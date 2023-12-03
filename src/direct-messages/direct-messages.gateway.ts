@@ -94,11 +94,11 @@ export class DirectMessagesGateway {
   @Serialize(unreadMassageDto)
   async unReadMessageDirectCount(@ConnectedSocket() clientSocket: Socket) {
     const userId = await this.socketConnectionGateway.socketToUserId(clientSocket.id);
-    const friendRelation = await this.userRelationService.findAllFriends(userId);
+    const friends = await this.userRelationService.findAllFriends(userId);
     const unreadMassagesCount = await this.directMessagesService.getUnreadMsgCount(userId);
 
     return unreadMassagesCount.filter((msgCount) =>
-      friendRelation.some((relation) => relation.otherUser.id === msgCount.message_sender_id),
+      friends.some((friend) => friend.id === msgCount.message_sender_id),
     );
   }
 }

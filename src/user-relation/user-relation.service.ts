@@ -177,14 +177,15 @@ export class UserRelationService {
     });
   }
 
-  async findAllFriends(userId: number): Promise<UserRelation[]> {
-    return this.userRelationRepository.find({
+  async findAllFriends(userId: number): Promise<User[]> {
+    const relations = await this.userRelationRepository.find({
       where: {
         user: { id: userId },
         status: UserRelationStatusEnum.FRIEND,
       },
       relations: ['otherUser'],
     });
+    return relations.map((relation) => relation.otherUser);
   }
 
   // user기준으로 차단 유저리스트 반환
