@@ -300,6 +300,10 @@ export class ChannelsService {
       throw new ForbiddenException('이미 관리자 권한이 없는 유저입니다!');
     }
 
+    if (updateData.isAdmin && requestedUserRelation.isAdmin) {
+      throw new ForbiddenException('이미 관리자입니다!');
+    }
+
     requestedUserRelation.isAdmin = updateData.isAdmin;
     await this.channelRelationRepository.save(requestedUserRelation);
     await this.channelGateway.emitChannelMemberUpdate(channelId, requestedUserRelation);
