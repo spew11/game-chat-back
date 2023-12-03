@@ -32,7 +32,7 @@ export class ChannelsController {
   @Post()
   async createChannel(
     @GetUser() user: User,
-    @Body() channelDto: ChannelDto
+    @Body() channelDto: ChannelDto,
   ): Promise<ChannelInfoDto> {
     const newChannel = await this.channelService.createChannel(user, channelDto);
 
@@ -48,12 +48,12 @@ export class ChannelsController {
     const channelRelations = await this.channelService.findChannelsByUser(user.id);
 
     return channelRelations.map((relation) => {
-        return {
-            id: relation.channel.id,
-            title: relation.channel.title,
-            type: relation.channel.type,
-            role: relation.isOwner ? 'Owner' : relation.isAdmin ? 'Admin' : 'User',
-        };
+      return {
+        id: relation.channel.id,
+        title: relation.channel.title,
+        type: relation.channel.type,
+        role: relation.isOwner ? 'Owner' : relation.isAdmin ? 'Admin' : 'User',
+      };
     });
   }
 
@@ -82,10 +82,10 @@ export class ChannelsController {
       id: channelWithUsers.id,
       title: channelWithUsers.title,
       type: channelWithUsers.type,
-      users: channelWithUsers.channelRelations.map(relation => ({
+      users: channelWithUsers.channelRelations.map((relation) => ({
         id: relation.user.id,
         nickname: relation.user.nickname,
-        role: relation.isOwner ? 'Owner' : relation.isAdmin ? 'Admin' : 'User'
+        role: relation.isOwner ? 'Owner' : relation.isAdmin ? 'Admin' : 'User',
       })),
     };
   }
@@ -94,7 +94,7 @@ export class ChannelsController {
   async getAllChannels(): Promise<ChannelInfoDto[]> {
     const channels = await this.channelService.findAllChannels();
 
-    return channels.map(channel => ({
+    return channels.map((channel) => ({
       id: channel.id,
       title: channel.title,
       type: channel.type,
@@ -111,13 +111,13 @@ export class ChannelsController {
 
   @Get(':channel_id/ban')
   async getAllChannelBannedUsers(
-    @Param('channel_id', ParseIntPipe) channelId: number
+    @Param('channel_id', ParseIntPipe) channelId: number,
   ): Promise<ShowUserIdDto[]> {
     const bannedUsers = await this.channelService.findAllChannelBannedUsers(channelId);
 
-    return bannedUsers.map(user => ({
+    return bannedUsers.map((user) => ({
       id: user.id,
-      nickname: user.nickname
+      nickname: user.nickname,
     }));
   }
 
@@ -189,13 +189,13 @@ export class ChannelsController {
     return {
       user: {
         id: invitation.user.id,
-        nickname: invitation.user.nickname
+        nickname: invitation.user.nickname,
       },
       channel: {
         id: invitation.channel.id,
         title: invitation.channel.title,
         type: invitation.channel.type,
-      }
+      },
     };
   }
 

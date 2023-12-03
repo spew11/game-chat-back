@@ -1,5 +1,5 @@
 export class UserRoleDto {
-	id: number;
-	nickname: string;
-	role: string;
-  }
+  id: number;
+  nickname: string;
+  role: string;
+}
