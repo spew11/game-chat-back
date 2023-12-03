@@ -21,8 +21,8 @@ import { AdminGuard, OwnerGuard } from './channels.guard';
 import { ChannelInfoDto } from './dto/channel-info.dto';
 import { ChannelRoleDto } from './dto/channel-role.dto';
 import { ChannelWithUsersDto } from './dto/channel-with-user.dto';
-import { UserInfoDto } from './dto/channel-user-info.dto';
 import { ChannelInvitationDto } from './dto/channel-invitation.dto';
+import { ShowUserIdDto } from 'src/user-relation/dtos/show-user-id.dto';
 
 @UseGuards(AuthGuard)
 @Controller('channels')
@@ -112,7 +112,7 @@ export class ChannelsController {
   @Get(':channel_id/ban')
   async getAllChannelBannedUsers(
     @Param('channel_id', ParseIntPipe) channelId: number
-  ): Promise<UserInfoDto[]> {
+  ): Promise<ShowUserIdDto[]> {
     const bannedUsers = await this.channelService.findAllChannelBannedUsers(channelId);
 
     return bannedUsers.map(user => ({

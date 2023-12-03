@@ -1,15 +1,7 @@
-export class UserInfoDto {
-	id: number;
-	nickname: string;
-}
-
-export class ChannelInfoDto {
-	id: number;
-	title: string;
-	type: string;
-}
+import { ShowUserIdDto } from "src/user-relation/dtos/show-user-id.dto";
+import { ChannelInfoDto } from "./channel-info.dto";
 
 export class ChannelInvitationDto {
-	user: UserInfoDto;
+	user: ShowUserIdDto;
 	channel: ChannelInfoDto;
 }
