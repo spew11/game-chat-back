@@ -3,8 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import { authenticator } from 'otplib';
 import * as base32 from 'thirty-two';
-import { toFileStream } from 'qrcode';
-import { Response } from 'express';
+import { toDataURL } from 'qrcode';
 
 @Injectable()
 export class SecureShieldService {
@@ -13,9 +12,12 @@ export class SecureShieldService {
   private readonly algorithm = 'aes-256-cbc';
   private readonly serviceName = 'ft_transendence';
 
-  generateTotpQrCode(res: Response, email: string, secretKey: string): void {
-    const otpauthurl = authenticator.keyuri(email, this.serviceName, secretKey);
-    toFileStream(res, otpauthurl);
+  generateTotpAuthUrl(email: string, secretKey: string): string {
+    return authenticator.keyuri(email, this.serviceName, secretKey);
+  }
+
+  generateTotpQrCode(email: string, secretKey: string) {
+    return toDataURL(this.generateTotpAuthUrl(email, secretKey));
   }
 
   generateSecretKey(): string {
