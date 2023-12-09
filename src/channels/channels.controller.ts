@@ -78,15 +78,23 @@ export class ChannelsController {
   ): Promise<ChannelWithUsersDto> {
     const channelWithUsers = await this.channelService.findOneChannelWithUsers(channelId);
 
+    const usersWithMuteStatus = (
+      channelWithUsers.channelRelations.map((relation) => {
+        const isMuted = this.channelService.isUserMuted(relation);
+        return {
+          id: relation.user.id,
+          nickname: relation.user.nickname,
+          role: relation.isOwner ? 'Owner' : relation.isAdmin ? 'Admin' : 'User',
+          isMuted: isMuted,
+        };
+      })
+    );
+
     return {
       id: channelWithUsers.id,
       title: channelWithUsers.title,
       type: channelWithUsers.type,
-      users: channelWithUsers.channelRelations.map((relation) => ({
-        id: relation.user.id,
-        nickname: relation.user.nickname,
-        role: relation.isOwner ? 'Owner' : relation.isAdmin ? 'Admin' : 'User',
-      })),
+      users: usersWithMuteStatus,
     };
   }
 
