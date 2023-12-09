@@ -14,6 +14,9 @@ export class ChannelRelationDto {
   @Expose()
   createdAt: Date;
 
+  @Expose()
+  isMuted: boolean;
+
   // @Column({ nullable: true, type: 'timestamp' })
   // muteUntil: Date;
 

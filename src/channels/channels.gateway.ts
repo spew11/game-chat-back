@@ -8,6 +8,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import {
   Inject,
+  BadRequestException,
   NotFoundException,
   UseFilters,
   UsePipes,
@@ -71,6 +72,9 @@ export class ChannelGateway {
     const channelRelation = await this.channelsService.findOneChannelRelation(channelId, senderId);
     if (!channelRelation) {
       throw new NotFoundException('잘못된 channelId 입니다.: communicateChannelMessage');
+    }
+    if (channelRelation.isMuted) {
+      throw new BadRequestException('mute된 유저입니다.')
     }
 
     const blockingUsers = await this.userRelationService.findAllBlockingUsers(senderId);

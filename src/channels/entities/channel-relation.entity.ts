@@ -29,6 +29,14 @@ export class ChannelRelation {
   @Column({ nullable: true, type: 'timestamp' })
   muteUntil: Date;
 
+  get isMuted() {
+    if (!this.muteUntil)
+      return false;
+
+    const now = new Date();
+    return this.muteUntil > now;
+  }
+
   @ManyToOne(() => User, (user) => user.channelRelations, {
     onDelete: 'CASCADE',
   })
