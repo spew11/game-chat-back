@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
@@ -82,14 +82,15 @@ export class AuthService {
     return this.usersService.createUser(userEmail, createUserDto);
   }
 
-  async initialize2fa(user: User) {
+  async initialize2fa(res: Response, user: User): Promise<void> {
     if (user.is2fa) {
       throw new BadRequestException('2단계 인증이 이미 활성화 상태입니다.');
     }
     if (!user.otpSecret) {
       await this.usersService.createSecretKey(user);
     }
-    return this.secureShieldService.generateOtpAuthUrl(
+    this.secureShieldService.generateTotpQrCode(
+      res,
       user.email,
       this.secureShieldService.decrypt(user.otpSecret),
     );
