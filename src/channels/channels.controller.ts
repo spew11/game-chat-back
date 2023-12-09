@@ -80,12 +80,11 @@ export class ChannelsController {
 
     const usersWithMuteStatus = (
       channelWithUsers.channelRelations.map((relation) => {
-        const isMuted = this.channelService.isUserMuted(relation);
         return {
           id: relation.user.id,
           nickname: relation.user.nickname,
           role: relation.isOwner ? 'Owner' : relation.isAdmin ? 'Admin' : 'User',
-          isMuted: isMuted,
+          isMuted: relation.isMuted,
         };
       })
     );

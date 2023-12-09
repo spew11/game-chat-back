@@ -15,7 +15,6 @@ import { ChannelDto } from './dto/channel.dto';
 import * as bcrypt from 'bcrypt';
 import { ChannelInvitation, InvitationStatus } from './entities/channel-invitation.entity';
 import { ChannelGateway } from './channels.gateway';
-import { ChannelInfoDto } from './dto/channel-info.dto';
 
 @Injectable()
 export class ChannelsService {
@@ -560,17 +559,17 @@ export class ChannelsService {
     }
   }
 
-  isUserMuted(relation: ChannelRelation): boolean {
+  // isUserMuted(relation: ChannelRelation): boolean {
 
-    if (!relation.muteUntil) return false;
+  //   if (!relation.muteUntil) return false;
 
-    const now = new Date();
-    if (relation.muteUntil > now) {
-      return true; // 유저가 아직 muted 상태
-    } else {
-      return false;
-    } // 5분의 시간이 경과되면 mute 해제
-  }
+  //   const now = new Date();
+  //   if (relation.muteUntil > now) {
+  //     return true; // 유저가 아직 muted 상태
+  //   } else {
+  //     return false;
+  //   } // 5분의 시간이 경과되면 mute 해제
+  // }
   // 채널 소켓 메소드에서
   // const isMuted = await this.channelsService.isUserMuted(userId, channelId);
   // if (isMuted) {
