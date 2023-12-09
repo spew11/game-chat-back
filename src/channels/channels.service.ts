@@ -560,19 +560,14 @@ export class ChannelsService {
     }
   }
 
-  async isUserMuted(userId: number, channelId: number): Promise<boolean> {
-    const userRelation = await this.channelRelationRepository.findOne({
-      where: { user: { id: userId }, channel: { id: channelId } },
-    });
+  isUserMuted(relation: ChannelRelation): boolean {
 
-    if (!userRelation || !userRelation.muteUntil) return false;
+    if (!relation.muteUntil) return false;
 
     const now = new Date();
-    if (userRelation.muteUntil > now) {
+    if (relation.muteUntil > now) {
       return true; // 유저가 아직 muted 상태
     } else {
-      userRelation.muteUntil = null;
-      await this.channelRelationRepository.save(userRelation);
       return false;
     } // 5분의 시간이 경과되면 mute 해제
   }
