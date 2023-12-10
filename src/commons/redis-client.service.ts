@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Redis } from 'ioredis';
-import { Socket } from 'socket.io';
-import { RedisField } from './enums/redis.enum';
 
 @Injectable()
 export class RedisService {
@@ -24,6 +22,30 @@ export class RedisService {
 
   get client(): Redis {
     return this.redisClient;
+  }
+
+  get(key: string | number) {
+    const formattedKey = typeof key === 'number' ? key.toString() : key;
+
+    return this.redisClient.get(formattedKey);
+  }
+
+  setex(key: string | number, second: number, value: string | number) {
+    const formattedKey = typeof key === 'number' ? key.toString() : key;
+
+    return this.redisClient.setex(formattedKey, second, value);
+  }
+
+  getdel(key: string | number) {
+    const formattedKey = typeof key === 'number' ? key.toString() : key;
+
+    return this.redisClient.getdel(formattedKey);
+  }
+
+  del(key: string | number) {
+    const formattedKey = typeof key === 'number' ? key.toString() : key;
+
+    return this.redisClient.del(formattedKey);
   }
 
   hset(key: string | number, field: string, value: string | number) {

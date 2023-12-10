@@ -149,7 +149,6 @@ export class ChannelGateway {
   // prettier-ignore
   notiChannelInvite(invitation: ChannelInvitation) {
       const invitedUserId = invitation.user.id.toString()
-      console.log()
       const noti = dtoSerializer(NotiChannelInviteDto, invitation)
       this.server
         .to(SocketRoomPrefix.USER_ID + invitedUserId)
