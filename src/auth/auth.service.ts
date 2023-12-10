@@ -82,15 +82,27 @@ export class AuthService {
     return this.usersService.createUser(userEmail, createUserDto);
   }
 
-  async initialize2fa(res: Response, user: User): Promise<void> {
+  async initialize2fa2(res: Response, user: User): Promise<string> {
     if (user.is2fa) {
       throw new BadRequestException('2단계 인증이 이미 활성화 상태입니다.');
     }
     if (!user.otpSecret) {
       await this.usersService.createSecretKey(user);
     }
-    this.secureShieldService.generateTotpQrCode(
-      res,
+    return this.secureShieldService.generateTotpAuthUrl(
+      user.email,
+      this.secureShieldService.decrypt(user.otpSecret),
+    );
+  }
+
+  async initialize2fa(res: Response, user: User): Promise<string> {
+    if (user.is2fa) {
+      throw new BadRequestException('2단계 인증이 이미 활성화 상태입니다.');
+    }
+    if (!user.otpSecret) {
+      await this.usersService.createSecretKey(user);
+    }
+    return this.secureShieldService.generateTotpQrCode(
       user.email,
       this.secureShieldService.decrypt(user.otpSecret),
     );

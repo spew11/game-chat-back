@@ -120,8 +120,16 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Post('2fa/setup')
-  async getOtpAuthUrl(@Res() res: Response, @GetUser() user: User): Promise<void> {
-    await this.authService.initialize2fa(res, user);
+  async getTotpQrCode(@Res() res: Response, @GetUser() user: User): Promise<void> {
+    const qrimgurl = await this.authService.initialize2fa(res, user);
+    res.send({ qrimgurl: qrimgurl });
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('2fa/setup/url')
+  async getTotpAuthUrl(@Res() res: Response, @GetUser() user: User): Promise<void> {
+    const otpauthurl = await this.authService.initialize2fa2(res, user);
+    res.send({ otpauthurl: otpauthurl });
   }
 
   @UseGuards(AuthGuard)
