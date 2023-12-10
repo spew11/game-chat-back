@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { SecureShieldService } from 'src/secure-shield/secure-shield.service';

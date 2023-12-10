@@ -1,4 +1,4 @@
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -30,8 +30,7 @@ export class ChannelRelation {
   muteUntil: Date;
 
   get isMuted() {
-    if (!this.muteUntil)
-      return false;
+    if (!this.muteUntil) return false;
 
     const now = new Date();
     return this.muteUntil > now;

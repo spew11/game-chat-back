@@ -6,7 +6,7 @@ import { UserRelation } from './user-relation.entity';
 import { NotiFriendRequestDto } from '../notifications/dtos/noti-friend-request.dto';
 import { dtoSerializer } from 'src/utils/dtoSerializer.util';
 import { Server } from 'socket.io';
-import { SocketRoomPrefix } from 'src/socket-connection/enums/socket.enum';
+import { SocketRoomPrefix } from 'src/socket-connection/enums/socket-room-prefix.enum';
 
 @UseFilters(new WebsocketExceptionsFilter())
 @UsePipes(new ValidationPipe())

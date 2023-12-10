@@ -8,7 +8,7 @@ import { WebsocketExceptionsFilter } from '../filters/websocket-exception.filete
 import { corsConfig } from '@configs/cors.config';
 import { RedisKey, RedisFieldPrefix } from 'src/commons/enums/redis.enum';
 import { UserStatus } from 'src/users/enums/user-status.enum';
-import { SocketRoomPrefix } from './enums/socket.enum';
+import { SocketRoomPrefix } from './enums/socket-room-prefix.enum';
 
 @UseFilters(new WebsocketExceptionsFilter())
 @WebSocketGateway({

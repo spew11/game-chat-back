@@ -23,7 +23,7 @@ import { DirectMessageDto } from './dtos/direct-message.dto';
 import { unreadMassageDto } from './dtos/unread-message.dto';
 import { dtoSerializer } from 'src/utils/dtoSerializer.util';
 import { SocketConnectionGateway } from 'src/socket-connection/socket-connection.gateway';
-import { SocketRoomPrefix } from 'src/socket-connection/enums/socket.enum';
+import { SocketRoomPrefix } from 'src/socket-connection/enums/socket-room-prefix.enum';
 
 @UseFilters(new WebsocketExceptionsFilter())
 @UsePipes(new ValidationPipe())

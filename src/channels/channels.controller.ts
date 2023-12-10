@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { ChannelsService } from './channels.service';
 import { GetUser } from 'src/auth/user.decorator';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { ChannelDto } from './dto/channel.dto';
 import { Channel } from './entities/channel.entity';
 import { UserByIdPipe } from 'src/pipes/UserById.pipe';

@@ -27,7 +27,7 @@ import { ChannelMemberUpdateDto } from './dto/channel-member-update.dto';
 import { ChannelInvitation } from './entities/channel-invitation.entity';
 import { NotiChannelInviteDto } from 'src/notifications/dtos/noti-channel-invite.dto';
 import { SocketConnectionGateway } from 'src/socket-connection/socket-connection.gateway';
-import { SocketRoomPrefix } from 'src/socket-connection/enums/socket.enum';
+import { SocketRoomPrefix } from 'src/socket-connection/enums/socket-room-prefix.enum';
 
 @UseFilters(new WebsocketExceptionsFilter())
 @UsePipes(new ValidationPipe())
