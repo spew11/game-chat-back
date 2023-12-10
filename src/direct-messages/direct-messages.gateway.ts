@@ -22,10 +22,8 @@ import { Serialize } from 'src/interceptors/serializer.interceptor';
 import { DirectMessageDto } from './dtos/direct-message.dto';
 import { unreadMassageDto } from './dtos/unread-message.dto';
 import { dtoSerializer } from 'src/utils/dtoSerializer.util';
-import {
-  SocketConnectionGateway,
-  PRIVAVE_PREFIX,
-} from 'src/socket-connection/socket-connection.gateway';
+import { SocketConnectionGateway } from 'src/socket-connection/socket-connection.gateway';
+import { SocketRoomPrefix } from 'src/socket-connection/enums/socket.enum';
 
 @UseFilters(new WebsocketExceptionsFilter())
 @UsePipes(new ValidationPipe())
@@ -56,8 +54,8 @@ export class DirectMessagesGateway {
 
     // prettier-ignore
     this.server
-      .to(PRIVAVE_PREFIX + receiverId.toString())
-      .to(PRIVAVE_PREFIX + senderId.toString())
+      .to(SocketRoomPrefix.USER_ID + receiverId.toString())
+      .to(SocketRoomPrefix.USER_ID + senderId.toString())
       .emit('DM', messageDto);
   }
 
