@@ -5,15 +5,18 @@ import { ShowUserDetailsDto } from './dtos/show-user-details.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/user.decorator';
-import { User } from './user.entity';
-import { UserByIdPipe } from 'src/pipes/UserById.pipe';
+import { User } from './entities/user.entity';
 import { ShowUserInforamtionDto } from './dtos/show-user-information';
 import { Serialize } from 'src/interceptors/serializer.interceptor';
+import { SocketConnectionGateway } from 'src/socket-connection/socket-connection.gateway';
 
 @UseGuards(AuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private socketConnectionGateway: SocketConnectionGateway,
+  ) {}
 
   @Get()
   @Serialize(ShowUserOverviewDto)
@@ -23,14 +26,18 @@ export class UsersController {
 
   @Get('me')
   @Serialize(ShowUserInforamtionDto)
-  getUserInfomation(@GetUser() user: User): ShowUserInforamtionDto {
-    return user;
+  async getUserInfomation(@GetUser() user: User): Promise<ShowUserInforamtionDto> {
+    const userDetail = await this.usersService.findUserDetailById(user.id);
+    const userStatus = await this.socketConnectionGateway.getUserStatus(userDetail.id);
+    return { ...userDetail, status: userStatus };
   }
 
   @Get(':user_id')
   @Serialize(ShowUserDetailsDto)
-  getUserDetails(@Param('user_id', UserByIdPipe) user: User): ShowUserDetailsDto {
-    return user;
+  async getUserDetails(@Param('user_id') userId: number): Promise<ShowUserDetailsDto> {
+    const user = await this.usersService.findUserDetailById(userId);
+    const userStatus = await this.socketConnectionGateway.getUserStatus(userId);
+    return { ...user, status: userStatus };
   }
 
   @Put('me')

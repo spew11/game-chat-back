@@ -1,5 +1,7 @@
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import { AvatarEnum } from '../enums/avatar.enum';
+import { UserStatus } from '../enums/user-status.enum';
+import { MatchHistoryDto } from './match-history.dto';
 
 export class ShowUserInforamtionDto {
   @Expose()
@@ -16,5 +18,9 @@ export class ShowUserInforamtionDto {
   bio: string;
   @Expose()
   is2fa: boolean;
-  // 전적 정보 추가
+  @Expose()
+  @Type(() => MatchHistoryDto)
+  matchHistorys: MatchHistoryDto[];
+  @Expose()
+  status: UserStatus;
 }
