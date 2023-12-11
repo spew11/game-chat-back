@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersService } from './users/users.service';
-import { User } from './users/user.entity';
+import { User } from './users/entities/user.entity';
 import { UserRelationStatusEnum } from './user-relation/enums/user-relation-status.enum';
 import { UserRelation } from './user-relation/user-relation.entity';
 import { CreateUserRelationDto } from './user-relation/dtos/create-user-relation.dto';

@@ -1,7 +1,8 @@
 import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { ChannelRelation } from 'src/channels/entities/channel-relation.entity';
-import { ChannelInvitation } from '../channels/entities/channel-invitation.entity';
-import { AvatarEnum } from './enums/avatar.enum';
+import { ChannelInvitation } from '../../channels/entities/channel-invitation.entity';
+import { AvatarEnum } from '../enums/avatar.enum';
+import { MatchHistory } from './match-history.entity';
 
 @Entity()
 export class User {
@@ -38,4 +39,7 @@ export class User {
 
   @OneToMany(() => ChannelInvitation, (channelInvitation) => channelInvitation.user)
   channelInvitations: ChannelInvitation[];
+
+  @OneToMany(() => MatchHistory, (matchHistory) => matchHistory.user)
+  matchHistorys: MatchHistory[];
 }

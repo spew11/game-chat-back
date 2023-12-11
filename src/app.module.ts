@@ -12,6 +12,7 @@ import { DirectMessagesModule } from './direct-messages/direct-messages.module';
 import { SecureShieldModule } from './secure-shield/secure-shield.module';
 import { SocketConnectionModule } from './socket-connection/socket-connection.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { GamesModule } from './games/games.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     SecureShieldModule,
     SocketConnectionModule,
     NotificationsModule,
+    GamesModule,
   ],
   providers: [TestService],
 })

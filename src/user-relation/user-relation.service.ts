@@ -4,7 +4,7 @@ import { UserRelation } from './user-relation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRelationStatusEnum } from 'src/user-relation/enums/user-relation-status.enum';
 import { CreateUserRelationDto } from './dtos/create-user-relation.dto';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { In } from 'typeorm';
 import { UserRelationGateway } from './user-relation.gateway';
 
@@ -108,7 +108,7 @@ export class UserRelationService {
           status: UserRelationStatusEnum.PENDING_APPROVAL,
         });
         this.userRelationGateway.notiFriendRequest(pendingRelation);
-      } 
+      }
     } else {
       throw new BadRequestException('잘못된 요청입니다.');
     }
