@@ -6,7 +6,7 @@ export class GameInfoDto {
   @Expose()
   me: GamePlayerDto;
   @Expose()
-  oppense: GamePlayerDto;
+  opponent: GamePlayerDto;
   @Expose()
   ball: GameBallDto;
 }

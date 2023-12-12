@@ -50,12 +50,12 @@ export class GamesService {
       return;
     }
 
-    const { me, oppense } =
+    const { me, opponent } =
       player === match.player1
-        ? { me: match.player1, oppense: match.player2 }
-        : { me: match.player2, oppense: match.player1 };
+        ? { me: match.player1, opponent: match.player2 }
+        : { me: match.player2, opponent: match.player1 };
     me.score = 0;
-    oppense.score = 3;
+    opponent.score = 3;
     match.status = GameStatus.FINISH;
   }
 

@@ -116,7 +116,7 @@ export class GamesGateway {
     const gameStartDtoByP1 = dtoSerializer(GameStartDto, {
       ...gameSetting,
       me: { ...match.player1, info: user1 },
-      oppense: match.player2,
+      opponent: { ...match.player2, info: user2 },
       ball: match.ball,
     });
     this.server.to(match.player1.socketId).emit('game-start', gameStartDtoByP1);
@@ -125,7 +125,7 @@ export class GamesGateway {
     const gameStartDtoByP2 = dtoSerializer(GameStartDto, {
       ...gameSetting,
       me: { ...playerReverse2, info: user2 },
-      oppense: { ...playerReverse1, info: user1 },
+      opponent: { ...playerReverse1, info: user1 },
       ball: ballReverse,
     });
     this.server.to(match.player2.socketId).emit('game-start', gameStartDtoByP2);
@@ -134,7 +134,7 @@ export class GamesGateway {
   emitGameInfo(match: Match) {
     const gameInfoDtoByP1 = dtoSerializer(GameInfoDto, {
       me: match.player1,
-      oppense: match.player2,
+      opponent: match.player2,
       ball: match.ball,
     });
     this.server.to(match.player1.socketId).emit('game-info', gameInfoDtoByP1);
@@ -142,7 +142,7 @@ export class GamesGateway {
     const { playerReverse1, playerReverse2, ballReverse } = match.reverse();
     const gameInfoDtoByP2 = dtoSerializer(GameInfoDto, {
       me: playerReverse2,
-      oppense: playerReverse1,
+      opponent: playerReverse1,
       ball: ballReverse,
     });
     this.server.to(match.player2.socketId).emit('game-info', gameInfoDtoByP2);
