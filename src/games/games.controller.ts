@@ -16,6 +16,8 @@ import { RedisService } from 'src/commons/redis-client.service';
 import { GameMode } from './enums/game-mode.enum';
 import { gameType } from './enums/game-type.enum';
 import { GameModeDto } from './dtos/game-mode.dto';
+import { SocketConnectionGateway } from 'src/socket-connection/socket-connection.gateway';
+import { UserStatus } from 'src/users/enums/user-status.enum';
 
 type Wating = {
   [GameMode.STANDARD]: number | null;
@@ -33,17 +35,24 @@ export class GamesController {
   constructor(
     private gamesGateway: GamesGateway,
     private redisService: RedisService,
+    private socketConnectionGateway: SocketConnectionGateway,
   ) {}
 
   // 매칭 방식은 추후에 queue를 이용하는것으로 변경
   @Post('queue')
   async joinGameQueue(@GetUser() user: User, @Body() { mode }: GameModeDto) {
-    if (!this.wating[mode] || this.wating[mode] === user.id) {
+    const userStatus = await this.socketConnectionGateway.getUserStatus(user.id);
+    if (userStatus === UserStatus.INGAME) {
+      throw new BadRequestException('이미 게임에 참여하고 있습니다.');
+    }
+
+    const watingUserId = this.wating[mode];
+    if (!watingUserId || watingUserId === user.id) {
       this.wating[mode] = user.id;
       return;
     }
 
-    const userId1 = this.wating[mode];
+    const userId1 = watingUserId;
     const userId2 = user.id;
     this.wating[mode] = null;
 
@@ -78,6 +87,12 @@ export class GamesController {
     const mode = (await this.redisService.getdel(key)) as GameMode;
     if (!mode) {
       throw new NotFoundException('없거나 만료된 초대입니다.');
+    }
+
+    const invitingUserStatus = await this.socketConnectionGateway.getUserStatus(user.id);
+    const invitedUserStatus = await this.socketConnectionGateway.getUserStatus(user.id);
+    if (invitingUserStatus === UserStatus.INGAME || invitedUserStatus === UserStatus.INGAME) {
+      throw new BadRequestException('이미 게임에 참여하고 있습니다.');
     }
 
     return this.gamesGateway.initGame(invitingUserId, user.id, mode, gameType.FRIENDLY);
