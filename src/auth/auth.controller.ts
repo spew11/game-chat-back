@@ -18,35 +18,24 @@ import { AuthGuard } from './auth.guard';
 import { GetUser } from './user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { TotpDto } from 'src/secure-shield/dtos/totp.dto';
+import { SocketConnectionGateway } from 'src/socket-connection/socket-connection.gateway';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
     private usersService: UsersService,
+    private socketConnectionGateway: SocketConnectionGateway,
   ) {}
 
-  // async logout(@Req() req: Request, @Res() res: Response, @GetUser() user: User): Promise<void> {
   @UseGuards(AuthGuard)
   @Post('logout')
   async logout(@Req() req: Request, @Res() res: Response): Promise<void> {
-    await new Promise((resolve, reject) => {
-      req.session.destroy((err) => {
-        if (err) {
-          reject(console.log(`LOGOUT ERR: ${err}`));
-        }
-        res.clearCookie('session-cookie');
-        res.send('로그아웃 성공');
-        resolve(undefined);
-      });
-    });
-    // const sessionKey = `user:${user.id}`;
-    // if (await redisClient.exists(sessionKey)) {
-    //   await redisClient.hdel(sessionKey, 'email');
-    //   res.send('로그아웃 성공');
-    // } else {
-    //   res.send('로그아웃 실패');
-    // }
+    const socket = await this.socketConnectionGateway.userToSocket(req.user.id);
+    if (socket) socket.disconnect(true);
+    this.authService.removeSession(req);
+    res.clearCookie('session-cookie');
+    res.send('로그아웃 성공');
   }
 
   @Get('sign-in')

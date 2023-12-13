@@ -46,7 +46,9 @@ export class ChannelGateway {
 
   // client가 연결됬을 때
   async handleConnection(clientSocket: Socket): Promise<void> {
-    const userId = await this.socketConnectionGateway.getUserIdBySession(clientSocket);
+    const session = await this.socketConnectionGateway.getSessionBySocket(clientSocket);
+    const userId = session?.userId;
+    // 인증에 실패했을때 연결 끊기
     if (!userId) {
       clientSocket.disconnect(true);
       return;

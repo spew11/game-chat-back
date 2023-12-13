@@ -60,11 +60,6 @@ export class AuthService {
 
   async saveSession(req: Request, user: User): Promise<void> {
     if (user) {
-      // const sessionData = await redisClient.hget(`hash:${user.id}`.toString(), 'email');
-      // if (sessionData) {
-      // throw new ConflictException('이미 다른 기기에서 로그인되었습니다.');
-      // }
-      // await redisClient.hset(`user:${user.id}`.toString(), { email: user.email });
       req.session.userId = user.id;
       if (req?.session.userId) {
         console.log(`***express session 저장 성공!: ${req.session.userId} ***`);
@@ -72,6 +67,17 @@ export class AuthService {
     } else {
       throw new NotFoundException('존재하지 않는 유저입니다.');
     }
+  }
+
+  async removeSession(req: Request) {
+    await new Promise((resolve, reject) => {
+      req.session.destroy((err) => {
+        if (err) {
+          reject(console.log(`LOGOUT ERR: ${err}`));
+        }
+        resolve(undefined);
+      });
+    });
   }
 
   async joinUser(userEmail: string, createUserDto: CreateUserDto): Promise<User> {
