@@ -15,7 +15,7 @@ export class User {
   @Column({ unique: true })
   nickname: string;
 
-  @Column({ default: 0 })
+  @Column({ default: 1000 })
   ladderPoint: number;
 
   @Column({
@@ -25,7 +25,7 @@ export class User {
   })
   avatar: AvatarEnum;
 
-  @Column({ nullable: true })
+  @Column({ default: '' })
   bio: string;
 
   @Column({ default: false })
