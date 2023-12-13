@@ -105,7 +105,7 @@ export class ChannelsService {
   }
 
   async exitChannel(user: User, channelId: number): Promise<void> {
-    let ifTranferNeeded = false;
+    let isTransferNeeded = false;
     const channelRelation = await this.channelRelationRepository.findOne({
       where: { user, channel: { id: channelId } },
     });
@@ -115,7 +115,7 @@ export class ChannelsService {
     }
 
     if (channelRelation.isOwner) {
-      ifTranferNeeded = true;
+      isTransferNeeded = true;
     }
 
     // 채널에서 유저 삭제
@@ -134,8 +134,10 @@ export class ChannelsService {
       await this.channelInvitationRepository.save(invitation);
     }
 
-    if (ifTranferNeeded) {
+    if (isTransferNeeded) {
       // 채널에 남은 유저 있는지 확인.
+      const channel = await this.channelRepository.findOne({ where: { id: channelId } });
+
       const earliestOwnerRelation = await this.channelRelationRepository.findOne({
         where: { channel: { id: channelId } },
         order: { createdAt: 'ASC' },
@@ -145,7 +147,7 @@ export class ChannelsService {
         // 마지막 사람이 나갈 때 남은 유저가 없다면 채널 삭제
         await this.transferOwnership(earliestOwnerRelation);
       } else {
-        await this.channelRepository.delete(channelId);
+        await this.channelRepository.remove(channel);
       }
     }
     // 소켓으로 channelRoom에서 나가고 채널 유저들에게 전파
