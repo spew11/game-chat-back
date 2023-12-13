@@ -121,6 +121,7 @@ export class SocketConnectionGateway {
       session = JSON.parse(
         await this.redisService.client.get(RedisFieldPrefix.SESSION_ID + sessionId),
       );
+      if (session) session.id = sessionId;
     }
     return session;
   }
