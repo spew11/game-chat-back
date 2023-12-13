@@ -49,7 +49,8 @@ export class ChannelsService {
       isAdmin: true,
     });
 
-    await this.channelRelationRepository.save(channelRelation);
+    const savedRelation = await this.channelRelationRepository.save(channelRelation);
+    await this.channelGateway.joinChannelRoom(savedRelation);
 
     return channel;
   }
@@ -505,6 +506,7 @@ export class ChannelsService {
       where: {
         channel: { id: channelId },
         user: { id: userId },
+        isBanned: false,
       },
       relations: {
         user: true,

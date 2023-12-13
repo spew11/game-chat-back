@@ -78,7 +78,7 @@ export class ChannelGateway {
     const blockingUsers = await this.userRelationService.findAllBlockingUsers(senderId);
     const channelRoom = this.server.to(SocketRoomPrefix.CHANNEL_ID + channelId.toString());
     const channelRoomWithoutBlock = blockingUsers.reduce(
-      (room, user) => room.except(user.id.toString()),
+      (room, user) => room.except(SocketRoomPrefix.USER_ID + user.id.toString()),
       channelRoom,
     );
 
