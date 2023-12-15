@@ -115,13 +115,6 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard)
-  @Post('2fa/setup/url')
-  async getTotpAuthUrl(@Res() res: Response, @GetUser() user: User): Promise<void> {
-    const otpauthurl = await this.authService.initialize2fa2(res, user);
-    res.send({ otpauthurl: otpauthurl });
-  }
-
-  @UseGuards(AuthGuard)
   @Post('2fa/on')
   async activate2fa(
     @Res() res: Response,

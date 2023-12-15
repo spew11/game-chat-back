@@ -12,12 +12,9 @@ export class SecureShieldService {
   private readonly algorithm = 'aes-256-cbc';
   private readonly serviceName = 'ft_transendence';
 
-  generateTotpAuthUrl(email: string, secretKey: string): string {
-    return authenticator.keyuri(email, this.serviceName, secretKey);
-  }
-
   generateTotpQrCode(email: string, secretKey: string) {
-    return toDataURL(this.generateTotpAuthUrl(email, secretKey));
+    const totpAuthUrl = authenticator.keyuri(email, this.serviceName, secretKey);
+    return toDataURL(totpAuthUrl);
   }
 
   generateSecretKey(): string {
