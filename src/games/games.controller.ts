@@ -89,7 +89,7 @@ export class GamesController {
       throw new NotFoundException('없거나 만료된 초대입니다.');
     }
 
-    const invitingUserStatus = await this.socketConnectionGateway.getUserStatus(user.id);
+    const invitingUserStatus = await this.socketConnectionGateway.getUserStatus(invitingUserId);
     const invitedUserStatus = await this.socketConnectionGateway.getUserStatus(user.id);
     if (invitingUserStatus === UserStatus.INGAME || invitedUserStatus === UserStatus.INGAME) {
       throw new BadRequestException('이미 게임에 참여하고 있습니다.');
