@@ -31,6 +31,14 @@ export class UsersService {
     });
   }
 
+  findByNickname(nickname: string): Promise<User> {
+    return this.userRepository.findOne({
+      where: {
+        nickname: nickname,
+      },
+    });
+  }
+
   findById(id: number): Promise<User> {
     return this.userRepository.findOneBy({ id });
   }
@@ -49,7 +57,10 @@ export class UsersService {
     return this.userRepository.findOne(options);
   }
 
-  updateUser(user: User, updateUserDto: UpdateUserDto) {
+  async updateUser(user: User, updateUserDto: UpdateUserDto): Promise<User> {
+    if (await this.findByNickname(updateUserDto.nickname)) {
+      throw new BadRequestException('이미 존재하는 닉네임입니다.');
+    }
     Object.assign(user, updateUserDto);
     return this.userRepository.save(user);
   }

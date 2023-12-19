@@ -81,9 +81,11 @@ export class AuthService {
   }
 
   async joinUser(userEmail: string, createUserDto: CreateUserDto): Promise<User> {
-    const existUser = await this.usersService.findByEmail(userEmail);
-    if (existUser) {
+    if (await this.usersService.findByEmail(userEmail)) {
       throw new BadRequestException('이미 가입된 유저입니다.');
+    }
+    if (await this.usersService.findByNickname(createUserDto.nickname)) {
+      throw new BadRequestException('이미 존재하는 닉네임입니다.');
     }
     return this.usersService.createUser(userEmail, createUserDto);
   }
