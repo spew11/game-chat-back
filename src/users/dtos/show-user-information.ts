@@ -1,5 +1,4 @@
 import { Expose, Type } from 'class-transformer';
-import { AvatarEnum } from '../enums/avatar.enum';
 import { UserStatus } from '../enums/user-status.enum';
 import { MatchHistoryDto } from './match-history.dto';
 
@@ -13,7 +12,7 @@ export class ShowUserInforamtionDto {
   @Expose()
   ladderPoint: number;
   @Expose()
-  avatar: AvatarEnum;
+  avatarImgPath: string;
   @Expose()
   bio: string;
   @Expose()
