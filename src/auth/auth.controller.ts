@@ -9,6 +9,8 @@ import {
   Param,
   UnauthorizedException,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -19,6 +21,8 @@ import { GetUser } from './user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { TotpDto } from 'src/secure-shield/dtos/totp.dto';
 import { SocketConnectionGateway } from 'src/socket-connection/socket-connection.gateway';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -75,20 +79,25 @@ export class AuthController {
   }
 
   @Post('register')
+  @UseInterceptors(FileInterceptor('file'))
   async userAdd(
     @Req() req: Request,
     @Res() res: Response,
+    @UploadedFile() file,
     @Body() createUserDto: CreateUserDto,
   ): Promise<void> {
-    const accessToken = req.cookies['access_token'];
-    if (accessToken) {
-      const userEmail = await this.authService.getEmail(accessToken);
-      const newUser = await this.authService.joinUser(userEmail, createUserDto);
-      await this.authService.saveSession(req, newUser);
-      res.send({ redirect: 'home' });
-    } else {
-      throw new UnauthorizedException('로그인이 필요합니다.');
-    }
+    // const accessToken = req.cookies['access_token'];
+    // if (accessToken) {
+    //   const userEmail = await this.authService.getEmail(accessToken);
+    //   const newUser = await this.authService.joinUser(userEmail, createUserDto);
+    //   await this.authService.saveSession(req, newUser);
+    //   res.send({ redirect: 'home' });
+    // } else {
+    //   throw new UnauthorizedException('로그인이 필요합니다.');
+    // }
+    console.log(createUserDto.nickname);
+    console.log(file);
+    res.send('success');
   }
 
   // session 저장, 토큰 반환 테스트를 위한 임시 핸들러
