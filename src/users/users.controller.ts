@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Put,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ShowUserOverviewDto } from './dtos/show-user-overview.dto';
 import { ShowUserDetailsDto } from './dtos/show-user-details.dto';
@@ -9,6 +19,11 @@ import { User } from './entities/user.entity';
 import { ShowUserInforamtionDto } from './dtos/show-user-information';
 import { Serialize } from 'src/interceptors/serializer.interceptor';
 import { SocketConnectionGateway } from 'src/socket-connection/socket-connection.gateway';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { MulterConfigService } from 'src/commons/MulterConfig.service';
+import { promises as fs } from 'fs';
+import { Response } from 'express';
+import { UserByIdPipe } from 'src/pipes/UserById.pipe';
 
 @UseGuards(AuthGuard)
 @Controller('users')
@@ -43,5 +58,33 @@ export class UsersController {
   @Put('me')
   async updateUser(@GetUser() user: User, @Body() userDto: UpdateUserDto): Promise<void> {
     await this.usersService.updateUser(user, userDto);
+  }
+
+  @Put('me/avatar')
+  @UseInterceptors(FileInterceptor('file', MulterConfigService.createMulterOptions()))
+  async updateAvatar(
+    @GetUser() user: User,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<void> {
+    const filename = file ? file.filename : null;
+    await this.usersService.updateUserAvatar(user, filename);
+  }
+
+  @Get(':user_id/avatar')
+  async getAvatarImg(
+    @Res() res: Response,
+    @Param('user_id', UserByIdPipe) user: User,
+  ): Promise<void> {
+    if (user.avatarImgPath) {
+      try {
+        await fs.access(user.avatarImgPath);
+        res.sendFile(user.avatarImgPath);
+      } catch (err) {
+        console.log(err);
+        res.sendFile('/app/imgs/notfound.png');
+      }
+    } else {
+      res.sendFile('/app/imgs/default.png');
+    }
   }
 }

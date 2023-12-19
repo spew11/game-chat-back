@@ -23,6 +23,7 @@ import { TotpDto } from 'src/secure-shield/dtos/totp.dto';
 import { SocketConnectionGateway } from 'src/socket-connection/socket-connection.gateway';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
+import { MulterConfigService } from 'src/commons/MulterConfig.service';
 
 @Controller('auth')
 export class AuthController {
@@ -79,25 +80,23 @@ export class AuthController {
   }
 
   @Post('register')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', MulterConfigService.createMulterOptions()))
   async userAdd(
     @Req() req: Request,
     @Res() res: Response,
-    @UploadedFile() file,
+    @UploadedFile() file: Express.Multer.File,
     @Body() createUserDto: CreateUserDto,
   ): Promise<void> {
-    // const accessToken = req.cookies['access_token'];
-    // if (accessToken) {
-    //   const userEmail = await this.authService.getEmail(accessToken);
-    //   const newUser = await this.authService.joinUser(userEmail, createUserDto);
-    //   await this.authService.saveSession(req, newUser);
-    //   res.send({ redirect: 'home' });
-    // } else {
-    //   throw new UnauthorizedException('로그인이 필요합니다.');
-    // }
-    console.log(createUserDto.nickname);
-    console.log(file);
-    res.send('success');
+    const accessToken = req.cookies['access_token'];
+    if (accessToken) {
+      const userEmail = await this.authService.getEmail(accessToken);
+      const filename = file ? file.fieldname : null;
+      const newUser = await this.authService.joinUser(userEmail, filename, createUserDto);
+      await this.authService.saveSession(req, newUser);
+      res.send({ redirect: 'home' });
+    } else {
+      throw new UnauthorizedException('로그인이 필요합니다.');
+    }
   }
 
   // session 저장, 토큰 반환 테스트를 위한 임시 핸들러

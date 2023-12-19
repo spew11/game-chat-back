@@ -13,8 +13,6 @@ import { SecureShieldModule } from './secure-shield/secure-shield.module';
 import { SocketConnectionModule } from './socket-connection/socket-connection.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { GamesModule } from './games/games.module';
-import { MulterModule } from '@nestjs/platform-express';
-// import { MulterConfigService } from './commons/MulterConfig.service';
 
 @Module({
   imports: [
@@ -24,12 +22,6 @@ import { MulterModule } from '@nestjs/platform-express';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
-    }),
-    // MulterModule.registerAsync({
-    //   useClass: MulterConfigService,
-    // }),
-    MulterModule.register({
-      dest: './uploads',
     }),
     AuthModule,
     UserRelationModule,
