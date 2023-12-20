@@ -4,7 +4,6 @@ import {
   Get,
   Param,
   Put,
-  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -21,9 +20,6 @@ import { Serialize } from 'src/interceptors/serializer.interceptor';
 import { SocketConnectionGateway } from 'src/socket-connection/socket-connection.gateway';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MulterConfigService } from 'src/commons/MulterConfig.service';
-import { promises as fs } from 'fs';
-import { Response } from 'express';
-import { UserByIdPipe } from 'src/pipes/UserById.pipe';
 
 @UseGuards(AuthGuard)
 @Controller('users')
