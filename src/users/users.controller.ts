@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Put,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ShowUserOverviewDto } from './dtos/show-user-overview.dto';
 import { ShowUserDetailsDto } from './dtos/show-user-details.dto';
@@ -9,6 +18,8 @@ import { User } from './entities/user.entity';
 import { ShowUserInforamtionDto } from './dtos/show-user-information';
 import { Serialize } from 'src/interceptors/serializer.interceptor';
 import { SocketConnectionGateway } from 'src/socket-connection/socket-connection.gateway';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { MulterConfigService } from 'src/commons/MulterConfig.service';
 
 @UseGuards(AuthGuard)
 @Controller('users')
@@ -43,5 +54,15 @@ export class UsersController {
   @Put('me')
   async updateUser(@GetUser() user: User, @Body() userDto: UpdateUserDto): Promise<void> {
     await this.usersService.updateUser(user, userDto);
+  }
+
+  @Put('me/avatar')
+  @UseInterceptors(FileInterceptor('file', MulterConfigService.createMulterOptions()))
+  async updateAvatar(
+    @GetUser() user: User,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<void> {
+    const filename = file ? file.filename : null;
+    await this.usersService.updateUserAvatar(user, filename);
   }
 }

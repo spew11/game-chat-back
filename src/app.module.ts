@@ -13,6 +13,8 @@ import { SecureShieldModule } from './secure-shield/secure-shield.module';
 import { SocketConnectionModule } from './socket-connection/socket-connection.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { GamesModule } from './games/games.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -22,6 +24,10 @@ import { GamesModule } from './games/games.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+    }),
+    ServeStaticModule.forRoot({
+      serveRoot: '/static',
+      rootPath: join(__dirname, '..', 'static'),
     }),
     AuthModule,
     UserRelationModule,

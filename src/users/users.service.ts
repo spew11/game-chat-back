@@ -9,6 +9,7 @@ import { MatchHistory } from 'src/users/entities/match-history.entity';
 import { MatchResult } from 'src/users/enums/match-result.enum';
 import { Match } from 'src/games/game/games.match';
 import { gameType } from 'src/games/enums/game-type.enum';
+import { promises as fs } from 'fs';
 
 @Injectable()
 export class UsersService {
@@ -24,10 +25,19 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  createUser(userEmail: string, createUserDto: CreateUserDto): Promise<User> {
+  createUser(userEmail: string, filename: string, createUserDto: CreateUserDto): Promise<User> {
     return this.userRepository.save({
       email: userEmail,
+      ...(filename ? { avatarImgPath: `/static/uploads/${filename}` } : {}),
       ...createUserDto,
+    });
+  }
+
+  findByNickname(nickname: string): Promise<User> {
+    return this.userRepository.findOne({
+      where: {
+        nickname: nickname,
+      },
     });
   }
 
@@ -49,7 +59,24 @@ export class UsersService {
     return this.userRepository.findOne(options);
   }
 
-  updateUser(user: User, updateUserDto: UpdateUserDto) {
+  async updateUserAvatar(user: User, filename: string): Promise<User> {
+    if (user.avatarImgPath) {
+      try {
+        await fs.access(user.avatarImgPath);
+        await fs.unlink(user.avatarImgPath);
+      } catch (err) {
+        console.log(`Failed to delete the file: ${err.message}`);
+      }
+    }
+    user.avatarImgPath = filename ? `/static/uploads/${filename}` : null;
+    return this.userRepository.save(user);
+  }
+
+  async updateUser(user: User, updateUserDto: UpdateUserDto): Promise<User> {
+    const existNicknameUser = await this.findByNickname(updateUserDto.nickname);
+    if (existNicknameUser.id != user.id) {
+      throw new BadRequestException('이미 존재하는 닉네임입니다.');
+    }
     Object.assign(user, updateUserDto);
     return this.userRepository.save(user);
   }

@@ -80,12 +80,14 @@ export class AuthService {
     });
   }
 
-  async joinUser(userEmail: string, createUserDto: CreateUserDto): Promise<User> {
-    const existUser = await this.usersService.findByEmail(userEmail);
-    if (existUser) {
+  async joinUser(userEmail: string, filename: string, createUserDto: CreateUserDto): Promise<User> {
+    if (await this.usersService.findByEmail(userEmail)) {
       throw new BadRequestException('이미 가입된 유저입니다.');
     }
-    return this.usersService.createUser(userEmail, createUserDto);
+    if (await this.usersService.findByNickname(createUserDto.nickname)) {
+      throw new BadRequestException('이미 존재하는 닉네임입니다.');
+    }
+    return this.usersService.createUser(userEmail, filename, createUserDto);
   }
 
   async initialize2fa(res: Response, user: User): Promise<string> {

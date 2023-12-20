@@ -9,6 +9,8 @@ import {
   Param,
   UnauthorizedException,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
   UseFilters,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
@@ -20,6 +22,9 @@ import { GetUser } from './user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { TotpDto } from 'src/secure-shield/dtos/totp.dto';
 import { SocketConnectionGateway } from 'src/socket-connection/socket-connection.gateway';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express';
+import { MulterConfigService } from 'src/commons/MulterConfig.service';
 import { AxiosExceptionFilter } from 'src/filters/axios-exception.filter';
 
 @Controller('auth')
@@ -79,15 +84,18 @@ export class AuthController {
 
   @UseFilters(AxiosExceptionFilter)
   @Post('register')
+  @UseInterceptors(FileInterceptor('file', MulterConfigService.createMulterOptions()))
   async userAdd(
     @Req() req: Request,
     @Res() res: Response,
+    @UploadedFile() file: Express.Multer.File,
     @Body() createUserDto: CreateUserDto,
   ): Promise<void> {
     const accessToken = req.cookies['access_token'];
     if (accessToken) {
       const userEmail = await this.authService.getEmail(accessToken);
-      const newUser = await this.authService.joinUser(userEmail, createUserDto);
+      const filename = file ? file.fieldname : null;
+      const newUser = await this.authService.joinUser(userEmail, filename, createUserDto);
       await this.authService.saveSession(req, newUser);
       res.send({ redirect: 'home' });
     } else {

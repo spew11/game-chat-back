@@ -11,6 +11,7 @@ services:
     volumes:
       - ./src:/app/src
       - ./secrets:${SSL_PATH}
+      - ./static:/app/static
     ports:
       - 3000:3000
     command: npm run start:dev
