@@ -11,6 +11,7 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  UseFilters,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -24,6 +25,7 @@ import { SocketConnectionGateway } from 'src/socket-connection/socket-connection
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
 import { MulterConfigService } from 'src/commons/MulterConfig.service';
+import { AxiosExceptionFilter } from 'src/filters/axios-exception.filter';
 
 @Controller('auth')
 export class AuthController {
@@ -49,6 +51,7 @@ export class AuthController {
     res.status(200).send({ data: this.authService.getRedirectUrl(state, callbackUri) });
   }
 
+  @UseFilters(AxiosExceptionFilter)
   @Get('user-redirect')
   async userRedirect(
     @Req() req: Request,
@@ -79,6 +82,7 @@ export class AuthController {
     }
   }
 
+  @UseFilters(AxiosExceptionFilter)
   @Post('register')
   @UseInterceptors(FileInterceptor('file', MulterConfigService.createMulterOptions()))
   async userAdd(
@@ -133,6 +137,7 @@ export class AuthController {
     res.send({ success: result });
   }
 
+  @UseFilters(AxiosExceptionFilter)
   @Post('2fa/login')
   async verifyTotpCode(
     @Req() req: Request,
