@@ -9,6 +9,7 @@ import {
   Param,
   UnauthorizedException,
   UseGuards,
+  UseFilters,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -19,6 +20,7 @@ import { GetUser } from './user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { TotpDto } from 'src/secure-shield/dtos/totp.dto';
 import { SocketConnectionGateway } from 'src/socket-connection/socket-connection.gateway';
+import { AxiosExceptionFilter } from 'src/filters/axios-exception.filter';
 
 @Controller('auth')
 export class AuthController {
@@ -44,6 +46,7 @@ export class AuthController {
     res.status(200).send({ data: this.authService.getRedirectUrl(state, callbackUri) });
   }
 
+  @UseFilters(AxiosExceptionFilter)
   @Get('user-redirect')
   async userRedirect(
     @Req() req: Request,
@@ -74,6 +77,7 @@ export class AuthController {
     }
   }
 
+  @UseFilters(AxiosExceptionFilter)
   @Post('register')
   async userAdd(
     @Req() req: Request,
@@ -125,6 +129,7 @@ export class AuthController {
     res.send({ success: result });
   }
 
+  @UseFilters(AxiosExceptionFilter)
   @Post('2fa/login')
   async verifyTotpCode(
     @Req() req: Request,
