@@ -28,7 +28,7 @@ export class UsersService {
   createUser(userEmail: string, filename: string, createUserDto: CreateUserDto): Promise<User> {
     return this.userRepository.save({
       email: userEmail,
-      ...(filename ? { avatarImgPath: `/app/uploads/${filename}` } : {}),
+      ...(filename ? { avatarImgPath: `/static/uploads/${filename}` } : {}),
       ...createUserDto,
     });
   }
@@ -68,7 +68,7 @@ export class UsersService {
         console.log(`Failed to delete the file: ${err.message}`);
       }
     }
-    user.avatarImgPath = filename ? `/app/uploads/${filename}` : null;
+    user.avatarImgPath = filename ? `/static/uploads/${filename}` : null;
     return this.userRepository.save(user);
   }
 

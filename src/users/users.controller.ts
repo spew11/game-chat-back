@@ -81,10 +81,10 @@ export class UsersController {
         res.sendFile(user.avatarImgPath);
       } catch (err) {
         console.log(err);
-        res.sendFile('/app/imgs/notfound.png');
+        res.sendFile('/app/static/imgs/notfound.png');
       }
     } else {
-      res.sendFile('/app/imgs/default.png');
+      res.sendFile('/app/static/imgs/default.png');
     }
   }
 }
