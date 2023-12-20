@@ -16,14 +16,11 @@ export class MulterConfigService {
         },
       }),
       fileFilter: (req, file, callback) => {
-        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        const allowedMimeTypes = ['image/jpeg', 'image/png'];
         if (allowedMimeTypes.includes(file.mimetype)) {
           callback(null, true);
         } else {
-          callback(
-            new BadRequestException('jpeg, png, gif 확장자를 가진 파일만 가능합니다.'),
-            false,
-          );
+          callback(new BadRequestException('jpeg, png 확장자를 가진 파일만 가능합니다.'), false);
         }
       },
       limits: {

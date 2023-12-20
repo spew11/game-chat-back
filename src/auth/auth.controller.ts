@@ -94,7 +94,7 @@ export class AuthController {
     const accessToken = req.cookies['access_token'];
     if (accessToken) {
       const userEmail = await this.authService.getEmail(accessToken);
-      const filename = file ? file.fieldname : null;
+      const filename = file ? file.filename : null;
       const newUser = await this.authService.joinUser(userEmail, filename, createUserDto);
       await this.authService.saveSession(req, newUser);
       res.send({ redirect: 'home' });

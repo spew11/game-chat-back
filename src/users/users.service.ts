@@ -28,7 +28,7 @@ export class UsersService {
   createUser(userEmail: string, filename: string, createUserDto: CreateUserDto): Promise<User> {
     return this.userRepository.save({
       email: userEmail,
-      ...(filename ? { avatarImgPath: `/static/uploads/${filename}` } : {}),
+      ...(filename ? { avatarImgPath: `static/uploads/${filename}` } : {}),
       ...createUserDto,
     });
   }
@@ -68,13 +68,13 @@ export class UsersService {
         console.log(`Failed to delete the file: ${err.message}`);
       }
     }
-    user.avatarImgPath = filename ? `/static/uploads/${filename}` : null;
+    user.avatarImgPath = filename ? `static/uploads/${filename}` : null;
     return this.userRepository.save(user);
   }
 
   async updateUser(user: User, updateUserDto: UpdateUserDto): Promise<User> {
     const existNicknameUser = await this.findByNickname(updateUserDto.nickname);
-    if (existNicknameUser.id != user.id) {
+    if (existNicknameUser && existNicknameUser.id != user.id) {
       throw new BadRequestException('이미 존재하는 닉네임입니다.');
     }
     Object.assign(user, updateUserDto);
