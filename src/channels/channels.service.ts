@@ -447,6 +447,7 @@ export class ChannelsService {
         user: {
           id: userId,
         },
+        status: InvitationStatus.Waiting,
       },
       relations: {
         user: true,
