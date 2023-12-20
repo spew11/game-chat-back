@@ -69,22 +69,4 @@ export class UsersController {
     const filename = file ? file.filename : null;
     await this.usersService.updateUserAvatar(user, filename);
   }
-
-  @Get(':user_id/avatar')
-  async getAvatarImg(
-    @Res() res: Response,
-    @Param('user_id', UserByIdPipe) user: User,
-  ): Promise<void> {
-    if (user.avatarImgPath) {
-      try {
-        await fs.access(user.avatarImgPath);
-        res.sendFile(user.avatarImgPath);
-      } catch (err) {
-        console.log(err);
-        res.sendFile('/app/static/imgs/notfound.png');
-      }
-    } else {
-      res.sendFile('/app/static/imgs/default.png');
-    }
-  }
 }
