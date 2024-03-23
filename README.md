@@ -1,86 +1,82 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+#  transcendence 
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+- 🧇[**transcendence**](https://d1vexdz72u651e.cloudfront.net/)는 42seoul 공통과정의 마지막 프로젝트입니다.
+- 실시간 pingpong게임과 DM, 그룹채팅을 지원하는 웹어플리케이션입니다.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+- 개발 기간 : 23.12.28 ~ 24.02.02
 
-## Description
+- 본 레포는 **BACKEND** 개발에 관한 내용을 위주로 설명합니다.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- FRONTEND 개발에 관해 궁금하시다면? [ft-transcendence-seoul](https://github.com/ft-transcendence-seoul/frontend)
+  <br/><br/>
 
-## Docker
+## 🏷️ 목차
 
-```bash
-# docker-compose 실행(node, postgres, redis, pgadmin)
-$ npm run docker-compose
+#### 1. [배포 💻](#💻-배포)
 
-# docker production image build
-$ npm run deploy:build
+#### 2. [개발팀 & 역할 분담 🙋‍♂️](#🙋‍♂️-개발팀--역할-분담)
 
-# docker production image deploy
-$ npm run deploy:push
-```
+#### 3. [Stacks 🔧](#🔧-stacks)
 
-## Installation
+#### 4. [주요 API & 소켓 명세📃](#📃-주요 API & 소켓 명세)
 
-```bash
-$ npm install
-```
+#### 5. [erd 설계 📱](#📱)
 
-## Running the app
+#### 6. [기능 소개 🚀](#🚀-기능 소개 )
 
-```bash
-# development
-$ npm run start
+## 💻 배포
 
-# watch mode
-$ npm run start:dev
 
-# production mode
-$ npm run start:prod
-```
+사이트 url:  https://develop.d35lpok7005dz1.amplifyapp.com/
 
-## Test
 
-```bash
-# unit tests
-$ npm run test
+## 🙋‍♂️ 개발팀 & 역할 분담
 
-# e2e tests
-$ npm run test:e2e
+|                                                                                             |                                                                                    |                                                                                              |
+| :-----------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------: |
+|                                           eunjilee                                            |                                       seonyun                                       |                                            woojeong                                            |
+|                     [@ohsuhyeon0119](https://github.com/ohsuhyeon0119)                      |                    [@ComPhyPark](https://github.com/ComPhyPark)                    |                            [@izone00](https://github.com/izone00)                            |
+| erd설계 / 인증(OAuth2, QR코드) / 유저 , 친구, 차단 API| 채널 관련 기능 API | DM, 채널 메세지, 게임, 알림 실시간 소켓 / 배포  |
 
-# test coverage
-$ npm run test:cov
-```
+</div>
 
-## Support
+## 🔧 Stacks
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+#### 기술 스택
 
-## Stay in touch
+<img src="https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white"> &nbsp; &nbsp; &nbsp;
+<img src="https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white"> &nbsp; &nbsp; &nbsp; 
+<img src="https://img.shields.io/badge/redis-DC382D?style=for-the-badge&logo=redis&logoColor=white"> &nbsp; &nbsp; &nbsp; 
+<img src="https://img.shields.io/badge/socket.io-010101?style=for-the-badge&logo=socket.io&logoColor=white"> &nbsp; &nbsp; &nbsp;
+<img src="https://img.shields.io/badge/amazonec2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white"> &nbsp; &nbsp; &nbsp; 
+<img src="https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"> &nbsp; &nbsp; &nbsp; 
+<br/><br/>
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+#### 협업
 
-## License
+<img src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=Slack&logoColor=white"> &nbsp; &nbsp; &nbsp;
+<img src="https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=Notion&logoColor=white"> &nbsp; &nbsp; &nbsp;
+<img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white">
+<br/><br/>
 
-Nest is [MIT licensed](LICENSE).
+## 📃 주요 API & 소켓 명세                                |
+[API 엔드포인트 ![alt text](<스크린샷 2024-03-23 133904.png>)](https://magnificent-front-23e.notion.site/074867d3c81548358f6f66c1892f50a9?v=7e96fea9c48e4e52bf8270af0597a88f)
+
+[웹소켓 명세 ![alt text](image-1.png)]https://magnificent-front-23e.notion.site/504cbe61748b4a6290ace5cfafcd53a5?pvs=74
+
+## 📱 erd 설계
+
+![alt text](image.png)
+<br></br>
+
+## 🚀 기능 소개
+
+- 🎥 42API의 **OAUTH2.0**을 통한 로그인을 지원하고 qr코드를 통한 authencation **2차 인증**을 제공합니다.
+
+- 👑 각 유저들은 친구나 차단 등의 관계를 가질수 있고 친구끼리는 서로 **DM**이 가능합니다.
+
+- 📊 채널을 생성하고 채널에 참가해 여러명의 유저와 **그룹 채팅**을 할 수 있습니다.
+- ⭐ 실시간으로 자신의 게임 rating에 따른 **게임 매칭**이 가능합니다. 
+- ✅ 웹소켓을 통해 **실시간으로 pingpong경기**를 할 수 있습니다. 
+- 📚 다른 유저 **online 상태를 확인**할 수 있고 **전적과 랭크 rating 조회** 가능
+- 👍 게임 매칭과 친구 초대, 메세지와 같은 기능을 **실시간 알림**으로 제공합니다.
