@@ -60,9 +60,7 @@
 <br/><br/>
 
 ## 📃 주요 API & 소켓 명세                                |
-[API 엔드포인트 ![alt text](<스크린샷 2024-03-23 133904.png>)](https://magnificent-front-23e.notion.site/074867d3c81548358f6f66c1892f50a9?v=7e96fea9c48e4e52bf8270af0597a88f)
-
-[웹소켓 명세 ![alt text](image-1.png)]https://magnificent-front-23e.notion.site/504cbe61748b4a6290ace5cfafcd53a5?pvs=74
+[API 엔드포인트 및 웹소켓 명세 ![alt text](<스크린샷 2024-03-23 133904.png>)](https://magnificent-front-23e.notion.site/074867d3c81548358f6f66c1892f50a9?v=7e96fea9c48e4e52bf8270af0597a88f)
 
 ## 📱 erd 설계
 
