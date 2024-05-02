@@ -35,7 +35,7 @@
 |                                                                                             |                                                                                    |                                                                                              |
 | :-----------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------: |
 |                                           eunjilee                                            |                                       seonyun                                       |                                            woojeong                                            |
-|                     [@spew11](https://github.com/spew11)                      |                    [@ComPhyPark](https://github.com/ComPhyPark)                    |                            [@izone00](https://github.com/izone00)                            |
+|                     [@spew11](https://github.com/spew11)                      |                    [@sbsny](https://github.com/sbsny)                    |                            [@izone00](https://github.com/izone00)                            |
 | erd설계 / 인증(OAuth2, QR코드) / 유저 , 친구, 차단 API| 채널 관련 기능 API | DM, 채널 메세지, 게임, 알림 실시간 소켓 / 배포  |
 
 </div>
